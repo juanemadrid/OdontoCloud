@@ -601,3 +601,53 @@
     font-size: 12px;
   }
 }
+/* =====================================================
+   🔹 AJUSTE RESPONSIVE — MENÚ SUPERIOR (MÓVIL)
+   ===================================================== */
+@media (max-width: 768px) {
+  .odc-topbar-blue {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    height: auto !important;
+  }
+
+  .odc-topbar-blue .logo,
+  .odc-topbar-blue .odc-title {
+    text-align: center;
+    width: 100%;
+  }
+
+  .odc-topbar-blue nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .odc-topbar-blue nav a {
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+
+  .odc-topbar-blue .search-input {
+    width: 90%;
+    max-width: 300px;
+  }
+
+  .odc-topbar-blue .right-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    position: static;
+  }
+
+  .odc-topbar-blue .btn {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+}
