@@ -237,7 +237,7 @@
 .odc-header-right {
   display: flex;
   align-items: center;
-  gap: 18px; /* 🔹 Aumentamos separación entre bloques */
+  gap: 18px;
   flex-wrap: wrap;
 }
 
@@ -286,15 +286,15 @@
   background: var(--primary-dark);
 }
 
-/* ----------- AJUSTE SOLO DE BUSCAR Y NUEVA CITA (alineación perfecta) ----------- */
+/* ----------- BUSCAR Y NUEVA CITA ----------- */
 .right-actions {
   display: flex;
-  align-items: flex-start; /* 👈 Cambiamos de center a flex-start para control manual */
+  align-items: flex-start;
   gap: 10px;
   margin-left: auto;
   justify-content: flex-end;
   position: relative;
-  right: -160px; /* ✅ Ya comprobaste que este valor es el correcto para la posición horizontal */
+  right: -160px;
 }
 
 .search-input {
@@ -304,10 +304,8 @@
   font-size: 14px;
   transition: border-color 0.12s ease, box-shadow 0.12s ease;
   min-width: 180px;
-
-  /* 🔧 Ajusta este margen si el input se ve más arriba o más abajo */
   position: relative;
-  top: 2px; /* 👈 Baja el input ligeramente (puedes probar 1px, 2px o 3px) */
+  top: 2px;
 }
 
 .search-input:focus {
@@ -319,12 +317,8 @@
   margin-left: 10px;
   align-self: flex-start;
   position: relative;
-  top: 3px; /* 👈 Puedes mover el botón también si prefieres subirlo un poco (por ejemplo, -2px) */
+  top: 3px;
 }
-
-
-
-
 
 /* Botones generales */
 .btn {
@@ -446,7 +440,6 @@
   color: #b7791f;
 }
 
-/* no-data row */
 .no-data {
   text-align: center;
   color: var(--muted);
@@ -454,7 +447,6 @@
   font-style: italic;
 }
 
-/* small fade-in for loaded rows */
 .fade-in-row {
   animation: fadeIn 240ms ease;
 }
@@ -464,140 +456,213 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ======================================
-   🔹 RESPONSIVE PROFESIONAL — OdontoCloud Agenda
-   ====================================== */
-
-/* 💻 Tablets horizontales o pantallas medianas */
-@media (max-width: 1024px) {
-  .odc-agenda-inner {
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .odc-left {
-    width: 100%;
-    flex-direction: row;
-    gap: 12px;
-  }
-
-  .odc-filters-card,
-  .odc-mini-calendar-card {
-    flex: 1;
-  }
-
-  .odc-right {
-    padding: 16px;
-  }
-
-  .appointments-table {
-    min-width: 100%;
-  }
-
-  .odc-header-bar {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .right-actions {
-    position: static;
-    justify-content: flex-end;
-  }
+/* ----------- RESPONSIVE ----------- */
+@media (max-width: 1000px) {
+  .odc-agenda-inner { flex-direction: column; }
+  .odc-left { width: 100%; flex-direction: row; gap: 12px; align-items: flex-start; }
+  .odc-filters-card, .odc-mini-calendar-card { flex: 1; }
+  .appointments-table { min-width: 100%; }
 }
 
-/* 📱 Celulares grandes (hasta 768px) */
+@media (max-width: 700px) {
+  .odc-header-bar { flex-direction: column; align-items: stretch; }
+  .odc-header-right { justify-content: center; }
+  .odc-left { flex-direction: column; width: 100%; }
+  .current-date { min-width: auto; text-align: left; }
+  .search-input { min-width: 120px; }
+}
+
+/* --- BOTONES DE HERRAMIENTAS --- */
+.tools-right {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.tools-right .btn {
+  background-color: var(--primary, #3b82f6);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.tools-right .btn:hover {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+.tools-right .btn:active {
+  transform: scale(0.98);
+}
+
+.tools-right .btn.blue {
+  background-color: #007bff;
+}
+
+.tools-right .btn.blue:hover {
+  background-color: #0062cc;
+}
+
+#btnPrint:hover {
+  background: #38a169;
+  color: #fff;
+  border-color: #2f855a;
+  box-shadow: 0 6px 15px rgba(56, 161, 105, 0.3);
+  transform: translateY(-2px);
+}
+
+/* ----------- TOPBARS ----------- */
+.odc-topbar-green {
+  height: 6px;
+  background: #009688;
+  border-radius: var(--radius) var(--radius) 0 0;
+  width: 100%;
+  position: relative;
+  z-index: 5;
+}
+
+.odc-topbar-blue {
+  background: linear-gradient(90deg, #1976d2 0%, #0d47a1 100%);
+  color: #fff;
+  font-weight: 600;
+  font-size: 18px;
+  padding: 12px 24px;
+  border-radius: 0 0 var(--radius) var(--radius);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+  position: relative;
+  z-index: 5;
+}
+
+.odc-agenda-root {
+  margin-top: 25px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ======================================================
+   🔧 BLOQUE FINAL RESPONSIVE AVANZADO
+   ====================================================== */
 @media (max-width: 768px) {
   .odc-agenda-inner {
     flex-direction: column;
     padding: 12px;
+    gap: 12px;
   }
 
   .odc-left {
-    flex-direction: column;
     width: 100%;
+    flex-direction: column;
+    gap: 12px;
   }
 
   .odc-right {
-    padding: 12px;
+    width: 100%;
+    padding: 14px;
+    box-shadow: none;
   }
 
   .odc-header-bar {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
 
   .odc-header-left,
   .odc-header-right {
-    justify-content: center;
-    width: 100%;
-  }
-
-  .view-buttons {
-    justify-content: center;
-  }
-
-  .right-actions {
     flex-direction: column;
     align-items: stretch;
-    right: 0;
-  }
-
-  .search-input {
-    width: 100%;
-    min-width: 100%;
-  }
-
-  #btnNuevaCita {
     width: 100%;
   }
 
-  .appointments-table {
-    font-size: 13px;
-  }
-
-  .tools-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .tools-right {
-    justify-content: space-between;
-  }
-}
-
-/* 📱 Celulares pequeños (hasta 480px) */
-@media (max-width: 480px) {
   .odc-title {
     font-size: 18px;
     text-align: center;
   }
 
-  .view-buttons .btn.view {
-    padding: 5px 8px;
+  .right-actions {
+    justify-content: center;
+    right: 0;
+    margin-top: 6px;
+  }
+
+  .search-input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  #btnNuevaCita {
+    width: 100%;
+    margin: 6px 0 0 0;
+  }
+
+  .appointments-table {
+    min-width: 100%;
+    font-size: 13px;
+  }
+
+  .table-wrap {
+    max-height: none;
+    overflow-x: auto;
+  }
+
+  .mini-month-table {
     font-size: 12px;
+  }
+
+  .odc-mini-calendar-card,
+  .odc-filters-card {
+    padding: 12px;
+  }
+
+  .tools-right {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .tools-right .btn {
+    width: 100%;
+    justify-content: center;
   }
 
   .current-date {
     font-size: 13px;
+    text-align: center;
+  }
+
+  .odc-agenda-root {
+    margin-top: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .odc-title {
+    font-size: 16px;
   }
 
   .btn,
-  .btn.icon {
-    font-size: 13px;
-    padding: 5px 8px;
+  .search-input {
+    font-size: 12px;
+    padding: 6px 8px;
   }
 
-  .tools-right .btn {
-    font-size: 13px;
-    padding: 5px 10px;
+  .odc-header-bar {
+    padding: 10px;
+  }
+
+  .odc-filters-card label {
+    font-size: 12px;
   }
 
   .appointments-table th,
   .appointments-table td {
     padding: 8px 6px;
-  }
-
-  .odc-filters-card label {
-    font-size: 12px;
   }
 }
