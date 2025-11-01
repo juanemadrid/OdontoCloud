@@ -10,6 +10,192 @@
   <meta http-equiv="Expires" content="0" />
   <title>Agenda</title>
   <link rel="stylesheet" href="modules/agenda.css?v=<?= Date.now() ?>">
+
+  <style>
+    /* ===============================
+       🔹 Ajustes Responsive Globales
+       =============================== */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+    }
+
+    .odc-agenda-root {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-light, #f7f7f7);
+    }
+
+    .odc-agenda-inner {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      max-width: 1600px;
+      margin: 0 auto;
+      gap: 1rem;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+
+    .odc-left {
+      flex: 0 0 300px;
+      max-width: 300px;
+    }
+
+    .odc-right {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .appointments-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .appointments-table th, 
+    .appointments-table td {
+      padding: 8px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    /* ===============================
+       🔹 MODO RESPONSIVE (Tablets y Teléfonos)
+       =============================== */
+    @media (max-width: 1024px) {
+      .odc-agenda-inner {
+        flex-direction: column;
+        padding: 0.5rem;
+      }
+
+      .odc-left {
+        flex: 1;
+        max-width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+      }
+
+      .odc-filters-card, .odc-mini-calendar-card {
+        width: 100%;
+        max-width: 450px;
+      }
+
+      .odc-header-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+      }
+
+      .odc-header-left, .odc-header-right {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+      }
+
+      .odc-header-right {
+        width: 100%;
+      }
+
+      .view-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .right-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        width: 100%;
+      }
+
+      .right-actions input {
+        flex: 1;
+        min-width: 150px;
+      }
+
+      .tools-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+      }
+
+      .tools-right {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+    }
+
+    /* ===============================
+       🔹 MODO MÓVIL (Pantallas pequeñas)
+       =============================== */
+    @media (max-width: 600px) {
+      .odc-topbar-green,
+      .odc-topbar-blue {
+        text-align: center;
+        font-size: 1.1rem;
+        padding: 0.6rem;
+      }
+
+      .odc-left {
+        display: none; /* Ocultar panel izquierdo en móvil */
+      }
+
+      .odc-right {
+        width: 100%;
+      }
+
+      .odc-header-bar {
+        gap: 1rem;
+      }
+
+      .view-buttons button {
+        flex: 1;
+        font-size: 0.9rem;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      .appointments-table th,
+      .appointments-table td {
+        padding: 6px;
+        font-size: 0.85rem;
+      }
+
+      /* 🔹 Hacer los botones grandes y fáciles de tocar */
+      .btn {
+        font-size: 0.9rem;
+        padding: 0.6rem 0.9rem;
+      }
+
+      #btnNuevaCita {
+        width: 100%;
+        text-align: center;
+      }
+
+      #searchCitas {
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
 
