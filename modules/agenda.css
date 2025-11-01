@@ -1,15 +1,13 @@
-
-@charset "UTF-8";
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-
+/* ===============================
+   AGENDA (Versión con Fondo Gris + Recuadro Flotante Mejorado)
+   =============================== */
 :root {
   --primary: #2b6cb0;
   --primary-light: #e6f0ff;
   --primary-dark: #1e4e8c;
   --accent-green: #38a169;
-  --bg-light: #dfe2e6;
-  --bg-panel: #f1f3f6;
+  --bg-light: #dfe2e6; /* 🔹 Fondo gris más oscuro */
+  --bg-panel: #f1f3f6; /* 🔹 Panel principal ligeramente más oscuro */
   --border: #d0d6dc;
   --text: #1f2937;
   --muted: #6b7280;
@@ -17,17 +15,15 @@
   --shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
 }
 
+/* ----------- ROOT LAYOUT ----------- */
 .odc-agenda-root {
   width: 100%;
-  min-height: 100dvh;
+  height: 100%;
   display: flex;
   background: var(--bg-light);
   font-family: "Inter", "Segoe UI", sans-serif;
   color: var(--text);
   box-sizing: border-box;
-  margin-top: 25px;
-  position: relative;
-  z-index: 1;
 }
 
 .odc-agenda-inner {
@@ -51,7 +47,7 @@
 .odc-filters-card {
   background: #fff;
   border-radius: var(--radius);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   padding: 16px;
   box-sizing: border-box;
 }
@@ -112,7 +108,7 @@
 }
 
 .mini-month-table td.today {
-  box-shadow: inset 0 0 0 1px rgba(43, 108, 176, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(43,108,176,0.12);
   font-weight: 600;
 }
 
@@ -146,10 +142,10 @@
 
 .odc-filters-card select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.06);
+  box-shadow: 0 0 0 3px rgba(43,108,176,0.06);
 }
 
-
+/* ----------- RIGHT PANEL ----------- */
 .odc-right {
   flex: 1;
   display: flex;
@@ -182,17 +178,18 @@
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.25);
 }
 
-
+/* ----------- HEADER BAR ----------- */
 .odc-header-bar {
   background: #fff;
   border-radius: var(--radius);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.07);
   padding: 12px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
+  box-sizing: border-box;
 }
 
 .odc-header-left {
@@ -222,12 +219,13 @@
   cursor: pointer;
   font-weight: 600;
   transition: all 0.16s ease;
+  box-shadow: none;
 }
 
 .view-buttons .btn.view.active {
   background: var(--primary-dark);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(30, 78, 140, 0.08);
+  box-shadow: 0 2px 8px rgba(30,78,140,0.08);
 }
 
 .view-buttons .btn.view:hover:not(.active) {
@@ -235,11 +233,11 @@
   color: #fff;
 }
 
-
+/* ----------- HEADER RIGHT ----------- */
 .odc-header-right {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 18px; /* 🔹 Aumentamos separación entre bloques */
   flex-wrap: wrap;
 }
 
@@ -288,15 +286,15 @@
   background: var(--primary-dark);
 }
 
-
+/* ----------- AJUSTE SOLO DE BUSCAR Y NUEVA CITA (alineación perfecta) ----------- */
 .right-actions {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-start; /* 👈 Cambiamos de center a flex-start para control manual */
   gap: 10px;
   margin-left: auto;
   justify-content: flex-end;
   position: relative;
-  right: -160px;
+  right: -160px; /* ✅ Ya comprobaste que este valor es el correcto para la posición horizontal */
 }
 
 .search-input {
@@ -306,23 +304,29 @@
   font-size: 14px;
   transition: border-color 0.12s ease, box-shadow 0.12s ease;
   min-width: 180px;
+
+  /* 🔧 Ajusta este margen si el input se ve más arriba o más abajo */
   position: relative;
-  top: 2px;
+  top: 2px; /* 👈 Baja el input ligeramente (puedes probar 1px, 2px o 3px) */
 }
 
 .search-input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.06);
+  box-shadow: 0 0 0 3px rgba(43,108,176,0.06);
 }
 
 #btnNuevaCita {
   margin-left: 10px;
   align-self: flex-start;
   position: relative;
-  top: 3px;
+  top: 3px; /* 👈 Puedes mover el botón también si prefieres subirlo un poco (por ejemplo, -2px) */
 }
 
-/* ----------- BOTONES ----------- */
+
+
+
+
+/* Botones generales */
 .btn {
   background: #fff;
   border: 1px solid var(--border);
@@ -347,15 +351,16 @@
   background: #2f855a;
 }
 
-
+/* ----------- CONTENT CARD ----------- */
 .odc-content-card {
   background: #fff;
   border-radius: var(--radius);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .tools-row {
@@ -377,38 +382,26 @@
   align-items: center;
 }
 
-.tools-right .btn {
-  background-color: var(--primary);
-  color: #fff;
+.tool {
+  background: none;
   border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
   cursor: pointer;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  font-size: 16px;
+  opacity: 0.7;
+  transition: opacity 0.12s, color 0.12s;
 }
 
-.tools-right .btn:hover {
-  background-color: #2563eb;
-  transform: translateY(-1px);
+.tool:hover {
+  opacity: 1;
+  color: var(--primary-dark);
 }
 
-.tools-right .btn.blue {
-  background-color: #007bff;
-}
-
-.tools-right .btn.blue:hover {
-  background-color: #0062cc;
-}
-
-
+/* ----------- TABLE ----------- */
 .table-wrap {
   overflow-y: auto;
   max-height: calc(100vh - 280px);
   padding: 12px;
+  box-sizing: border-box;
 }
 
 .appointments-table {
@@ -425,17 +418,35 @@
   font-weight: 600;
   padding: 10px;
   border-bottom: 1px solid var(--border);
+  text-align: left;
 }
 
 .appointments-table tbody td {
   padding: 12px 10px;
   border-bottom: 1px solid var(--border);
+  vertical-align: middle;
 }
 
 .appointments-table tr:hover td {
   background: var(--primary-light);
 }
 
+.estado {
+  display: inline-block;
+  padding: 6px 8px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(56,161,105,0.12);
+  color: var(--accent-green);
+}
+
+.estado.sin-deuda {
+  background: rgba(255,229,100,0.12);
+  color: #b7791f;
+}
+
+/* no-data row */
 .no-data {
   text-align: center;
   color: var(--muted);
@@ -443,7 +454,116 @@
   font-style: italic;
 }
 
+/* small fade-in for loaded rows */
+.fade-in-row {
+  animation: fadeIn 240ms ease;
+}
 
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ----------- RESPONSIVE ----------- */
+@media (max-width: 1000px) {
+  .odc-agenda-inner {
+    flex-direction: column;
+  }
+
+  .odc-left {
+    width: 100%;
+    flex-direction: row;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .odc-filters-card,
+  .odc-mini-calendar-card {
+    flex: 1;
+  }
+
+  .appointments-table {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .odc-header-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .odc-header-right {
+    justify-content: center;
+  }
+
+  .odc-left {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .current-date {
+    min-width: auto;
+    text-align: left;
+  }
+
+  .search-input {
+    min-width: 120px;
+  }
+}
+
+/* --- BOTONES DE HERRAMIENTAS (uniformes como Imprimir Agenda) --- */
+.tools-right {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* Botón base */
+.tools-right .btn {
+  background-color: var(--primary, #3b82f6);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* Efecto hover */
+.tools-right .btn:hover {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+/* Efecto click */
+.tools-right .btn:active {
+  transform: scale(0.98);
+}
+
+/* Botón azul (confirmar, opcionalmente distinto) */
+.tools-right .btn.blue {
+  background-color: #007bff;
+}
+
+.tools-right .btn.blue:hover {
+  background-color: #0062cc;
+}
+
+
+#btnPrint:hover {
+  background: #38a169;
+  color: #fff;
+  border-color: #2f855a;
+  box-shadow: 0 6px 15px rgba(56, 161, 105, 0.3);
+  transform: translateY(-2px);
+}
+/* ----------- TOPBARS (franjas superiores fuera del recuadro) ----------- */
 .odc-topbar-green {
   height: 6px;
   background: #009688;
@@ -460,80 +580,14 @@
   font-size: 18px;
   padding: 12px 24px;
   border-radius: 0 0 var(--radius) var(--radius);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
   position: relative;
   z-index: 5;
 }
 
-
-@media (max-width: 1000px) {
-  .odc-agenda-inner {
-    flex-direction: column;
-    padding: 12px;
-    gap: 12px;
-  }
-  .odc-left { width: 100%; flex-direction: row; gap: 12px; }
-  .odc-filters-card, .odc-mini-calendar-card { flex: 1; }
-}
-
-@media (max-width: 768px) {
-  .odc-agenda-inner { flex-direction: column; gap: 10px; }
-  .odc-left { width: 100%; order: 1; flex-direction: column; }
-  .odc-right { width: 100%; order: 2; padding: 14px; box-shadow: none; }
-  .odc-header-bar, .odc-header-left, .odc-header-right {
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-  }
-  .right-actions { justify-content: center; right: 0; margin-top: 6px; }
-  .search-input, #btnNuevaCita { width: 100%; min-width: 0; }
-  .table-wrap { max-height: none; overflow-x: auto; }
-  .tools-row { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .tools-right { flex-wrap: wrap; justify-content: center; }
-}
-
-@media (max-width: 480px) {
-  .odc-title { font-size: 16px; }
-  .btn, .search-input { font-size: 12px; padding: 6px 8px; }
-  .odc-header-bar { padding: 10px; }
-}
-
-
-html, body {
-  height: auto !important;
-  min-height: 100dvh !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  background-color: var(--bg-light, #dfe2e6);
-}
-
-
-@supports (height: 100svh) {
-  .odc-agenda-root {
-    min-height: 100svh;
-  }
-}
-
-body {
-  -webkit-overflow-scrolling: touch;
-}
-
-html, body {
-  height: auto !important;
-  min-height: 100vh !important;
-  overflow-y: visible !important;
-  overflow-x: hidden !important;
-}
-
+/* 🔹 Asegura que el recuadro principal quede separado de las barras */
 .odc-agenda-root {
-  height: auto !important;
-  min-height: 100vh !important;
-  display: flex;
-  flex-direction: column;
-}
-
-.odc-agenda-inner {
-  flex: 1 0 auto;
-  display: flex;
-  flex-direction: column;
+  margin-top: 25px; /* ajusta este valor para que no quede pegado */
+  position: relative;
+  z-index: 1;
 }
