@@ -305,3 +305,21 @@ body.dark .footer { background:#071020; color:#9aa6b2; border-top-color: rgba(25
     height: 42px;
   }
 }
+/* =======================================
+   🦷 FIX FINAL DEFINITIVO
+   Evita que el contenido (Agenda, etc.)
+   quede oculto debajo de la barra azul
+======================================= */
+body.dashboard main.content {
+  position: relative;
+  z-index: 1;
+  margin-top: 170px !important; /* 🔹 sube si ves mucho espacio; baja si falta */
+  padding-top: 20px !important;
+}
+
+/* Ajuste especial en móvil (las barras son más altas) */
+@media (max-width: 768px) {
+  body.dashboard main.content {
+    margin-top: 190px !important;
+  }
+}
