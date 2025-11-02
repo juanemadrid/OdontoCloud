@@ -305,3 +305,24 @@ body.dark .footer { background:#071020; color:#9aa6b2; border-top-color: rgba(25
     height: 42px;
   }
 }
+/* ===============================
+   ✅ FIX FINAL: Evita que el contenido quede detrás del header
+   =============================== */
+body.dashboard .topbar-main {
+  position: fixed;
+  top: 36px; /* debajo de la barra verde */
+  height: 85px; /* altura real de la azul */
+  z-index: 1050;
+}
+
+body.dashboard main.content {
+  margin-top: 140px !important; /* suma verde + azul */
+  padding-top: 10px;
+}
+
+/* Versión móvil: deja un poco más de espacio */
+@media (max-width: 768px) {
+  body.dashboard main.content {
+    margin-top: 150px !important;
+  }
+}
