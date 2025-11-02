@@ -13,39 +13,27 @@
 
   <style>
     /* ===========================================
-       🔹 CORRECCIÓN PRINCIPAL
+       🔹 AJUSTE PARA QUE AGENDA SE VEA COMPLETA
        =========================================== */
     body {
-      margin-top: 130px !important; /* 🔧 Aumentado para que quede visible debajo del header del dashboard */
+      margin-top: 70px !important; /* 🔧 Ajusta según la altura del header del dashboard */
       overflow-y: auto !important;
-      position: relative;
-      z-index: 2;
-      background: var(--bg-light, #f7f7f7);
     }
 
     html {
       height: auto !important;
-      scroll-behavior: smooth;
     }
 
-    /* ===========================================
-       🔹 MANTIENE TU DISEÑO ORIGINAL
-       =========================================== */
     .odc-agenda-root {
       margin-top: 0 !important;
       position: relative;
-      z-index: 3;
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      height: 100%;
-      background: var(--bg-light, #f7f7f7);
+      z-index: 2; /* Asegura que esté visible sobre el dashboard */
     }
 
     .odc-topbar-blue {
       position: sticky;
       top: 0;
-      z-index: 4;
+      z-index: 3;
     }
 
     /* ===============================
@@ -57,6 +45,14 @@
       width: 100%;
       height: 100%;
       overflow-x: hidden;
+    }
+
+    .odc-agenda-root {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-light, #f7f7f7);
     }
 
     .odc-agenda-inner {
@@ -207,6 +203,7 @@
         font-size: 0.85rem;
       }
 
+      /* 🔹 Hacer los botones grandes y fáciles de tocar */
       .btn {
         font-size: 0.9rem;
         padding: 0.6rem 0.9rem;
@@ -224,7 +221,6 @@
     }
   </style>
 </head>
-
 <body>
 
   <!-- 🔹 Franja verde -->
