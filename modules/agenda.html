@@ -12,6 +12,30 @@
   <link rel="stylesheet" href="modules/agenda.css?v=<?= Date.now() ?>">
 
   <style>
+    /* ===========================================
+       🔹 AJUSTE PARA QUE AGENDA SE VEA COMPLETA
+       =========================================== */
+    body {
+      margin-top: 70px !important; /* 🔧 Ajusta según la altura del header del dashboard */
+      overflow-y: auto !important;
+    }
+
+    html {
+      height: auto !important;
+    }
+
+    .odc-agenda-root {
+      margin-top: 0 !important;
+      position: relative;
+      z-index: 2; /* Asegura que esté visible sobre el dashboard */
+    }
+
+    .odc-topbar-blue {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+    }
+
     /* ===============================
        🔹 Ajustes Responsive Globales
        =============================== */
