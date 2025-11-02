@@ -10,9 +10,16 @@
   height: 100%;
   position: relative;
   z-index: 1;
-  margin-top: 0;
   background: #f5f8fb;
   font-family: 'Inter', system-ui, sans-serif;
+
+  /* 🔧 AJUSTE DE ALTURA SUPERIOR (FRANJA VERDE + AZUL)
+     --------------------------------------------------
+     Usa este valor para igualar la altura con Agenda.
+     - Si la franja de Paciente está demasiado alta → usa un número más pequeño (por ejemplo, -5px o 0)
+     - Si está demasiado baja → usa un número más grande (por ejemplo, -15px o -20px)
+  */
+  margin-top: -20px; /* ← Ajusta este valor a tu gusto */
 }
 
 /* ---------- TOPBARS ---------- */

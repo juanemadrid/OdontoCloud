@@ -1,5 +1,3 @@
-<!-- modules/agenda.html -->
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -13,41 +11,28 @@
 
   <style>
     /* ===========================================
-       🔹 AJUSTE PARA QUE AGENDA SE VEA COMPLETA
+       🔹 AJUSTE VISUAL SIN TRANSPARENCIAS NI DESPLAZAMIENTOS
        =========================================== */
-    body {
-      margin-top: 70px !important; /* 🔧 Ajusta según la altura del header del dashboard */
-      overflow-y: auto !important;
-    }
-
-    html {
-      height: auto !important;
-    }
-
-    .odc-agenda-root {
-      margin-top: 0 !important;
-      position: relative;
-      z-index: 2; /* Asegura que esté visible sobre el dashboard */
-    }
-
-    .odc-topbar-blue {
-      position: sticky;
-      top: 0;
-      z-index: 3;
-    }
-
-    /* ===============================
-       🔹 Ajustes Responsive Globales
-       =============================== */
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
       overflow-x: hidden;
+      overflow-y: auto;
+      background: var(--bg-light, #f7f7f7);
     }
 
+    /* 🔹 Este era el problema principal: estaba empujando todo hacia abajo */
+    body {
+      margin-top: 0 !important;
+    }
+
+    /* 🔹 Ajuste de Agenda para que se vea completa al mismo nivel que Paciente */
     .odc-agenda-root {
+      margin-top: 60px !important; /* Subida controlada */
+      position: relative;
+      z-index: 5; /* Asegura que quede sobre el dashboard */
       display: flex;
       justify-content: center;
       width: 100%;
@@ -96,7 +81,7 @@
     }
 
     /* ===============================
-       🔹 MODO RESPONSIVE (Tablets y Teléfonos)
+       🔹 MODO RESPONSIVE
        =============================== */
     @media (max-width: 1024px) {
       .odc-agenda-inner {
@@ -165,19 +150,9 @@
       }
     }
 
-    /* ===============================
-       🔹 MODO MÓVIL (Pantallas pequeñas)
-       =============================== */
     @media (max-width: 600px) {
-      .odc-topbar-green,
-      .odc-topbar-blue {
-        text-align: center;
-        font-size: 1.1rem;
-        padding: 0.6rem;
-      }
-
       .odc-left {
-        display: none; /* Ocultar panel izquierdo en móvil */
+        display: none;
       }
 
       .odc-right {
@@ -193,17 +168,12 @@
         font-size: 0.9rem;
       }
 
-      .table-wrap {
-        overflow-x: auto;
-      }
-
       .appointments-table th,
       .appointments-table td {
         padding: 6px;
         font-size: 0.85rem;
       }
 
-      /* 🔹 Hacer los botones grandes y fáciles de tocar */
       .btn {
         font-size: 0.9rem;
         padding: 0.6rem 0.9rem;
@@ -222,117 +192,92 @@
   </style>
 </head>
 <body>
-
-  <!-- 🔹 Franja verde -->
   <div class="odc-topbar-green"></div>
-
-  <!-- 🔹 Franja azul con título -->
   <div class="odc-topbar-blue">Agenda</div>
 
-  <!-- 🔹 Contenedor principal -->
   <section class="odc-agenda-root">
     <div class="odc-agenda-inner">
 
-      <!-- LEFT: Mini calendario y filtros -->
-      <aside class="odc-left" aria-label="Panel izquierdo - calendario y filtros">
-        <!-- Mini calendario -->
-        <div class="odc-mini-calendar-card" role="region" aria-label="Mini calendario">
+      <aside class="odc-left">
+        <div class="odc-mini-calendar-card">
           <div class="mini-cal-header">
-            <button class="cal-arrow" id="miniCalPrev" aria-label="Mes anterior">‹</button>
-            <div id="miniCalMonthYear" aria-live="polite">Cargando...</div>
-            <button class="cal-arrow" id="miniCalNext" aria-label="Mes siguiente">›</button>
+            <button class="cal-arrow" id="miniCalPrev">‹</button>
+            <div id="miniCalMonthYear">Cargando...</div>
+            <button class="cal-arrow" id="miniCalNext">›</button>
           </div>
 
-          <table class="mini-month-table" aria-hidden="false">
+          <table class="mini-month-table">
             <thead>
-              <tr>
-                <th>Lu</th><th>Ma</th><th>Mi</th><th>Ju</th><th>Vi</th><th>Sa</th><th>Do</th>
-              </tr>
+              <tr><th>Lu</th><th>Ma</th><th>Mi</th><th>Ju</th><th>Vi</th><th>Sa</th><th>Do</th></tr>
             </thead>
             <tbody id="miniCalendar"></tbody>
           </table>
         </div>
 
-        <!-- Filtros -->
-        <div class="odc-filters-card" aria-label="Filtros de agenda">
+        <div class="odc-filters-card">
           <label for="filterSucursal">Sucursal</label>
-          <select id="filterSucursal" aria-controls="citasTbody">
-            <option value="">— Todas —</option>
-          </select>
-
+          <select id="filterSucursal"><option value="">— Todas —</option></select>
           <label for="filterDoctor">Doctores</label>
-          <select id="filterDoctor" aria-controls="citasTbody">
-            <option value="">— Todos —</option>
-          </select>
+          <select id="filterDoctor"><option value="">— Todos —</option></select>
         </div>
       </aside>
 
-      <!-- RIGHT: Encabezado y contenido -->
-      <main class="odc-right" aria-label="Panel principal - agenda">
-
-        <!-- Header -->
-        <div class="odc-header-bar" role="region" aria-label="Controles de la agenda">
+      <main class="odc-right">
+        <div class="odc-header-bar">
           <div class="odc-header-left">
             <h3 class="odc-title">Agenda</h3>
-            <div class="view-buttons" role="tablist" aria-label="Vistas">
-              <button class="btn view active" data-view="day" role="tab" aria-selected="true">Día</button>
-              <button class="btn view" data-view="week" role="tab" aria-selected="false">Semana</button>
-              <button class="btn view" data-view="detail" role="tab" aria-selected="false">Detalle</button>
+            <div class="view-buttons">
+              <button class="btn view active" data-view="day">Día</button>
+              <button class="btn view" data-view="week">Semana</button>
+              <button class="btn view" data-view="detail">Detalle</button>
             </div>
           </div>
 
           <div class="odc-header-right">
             <div class="date-nav">
-              <button class="btn icon" id="btnPrev" aria-label="Día anterior">‹</button>
-              <button class="btn icon" id="btnNext" aria-label="Día siguiente">›</button>
-              <span id="currentDateDisplay" class="current-date" aria-live="polite">Cargando...</span>
+              <button class="btn icon" id="btnPrev">‹</button>
+              <button class="btn icon" id="btnNext">›</button>
+              <span id="currentDateDisplay" class="current-date">Cargando...</span>
               <button id="btnHoy" class="btn small">Hoy</button>
             </div>
 
             <div class="right-actions">
-              <input id="searchCitas" placeholder="Buscar..." class="search-input" aria-label="Buscar citas" />
-              <button id="btnNuevaCita" class="btn green" aria-label="Nueva cita">+ Nueva cita</button>
+              <input id="searchCitas" placeholder="Buscar..." class="search-input" />
+              <button id="btnNuevaCita" class="btn green">+ Nueva cita</button>
             </div>
           </div>
         </div>
 
-        <!-- Contenido principal -->
-        <div class="odc-content-card" role="region" aria-label="Contenido agenda">
+        <div class="odc-content-card">
           <div class="tools-row">
             <div class="tools-left">
               <div id="ocupacionInfo" class="ocupacion-info">Ocupación: —</div>
             </div>
-
             <div class="tools-right">
-              <button id="btnPrint" class="btn" title="Imprimir agenda">🖨️ Imprimir</button>
-              <button id="btnConfirmar" class="btn blue" title="Confirmar citas">📧 Confirmar</button>
-              <button id="btnHoyCitas" class="btn" title="Ver citas de hoy">📅 Hoy</button>
-              <button id="btnExportar" class="btn" title="Exportar citas a CSV">📤 Exportar</button>
+              <button id="btnPrint" class="btn">🖨️ Imprimir</button>
+              <button id="btnConfirmar" class="btn blue">📧 Confirmar</button>
+              <button id="btnHoyCitas" class="btn">📅 Hoy</button>
+              <button id="btnExportar" class="btn">📤 Exportar</button>
             </div>
           </div>
 
-          <!-- Tabla de citas -->
-          <div class="table-wrap" role="region" aria-label="Lista de citas">
-            <div class="table-responsive">
-              <table class="appointments-table" aria-live="polite">
-                <thead>
-                  <tr>
-                    <th style="width:110px">Hora</th>
-                    <th>Paciente</th>
-                    <th>Doctor</th>
-                    <th>Espacio físico</th>
-                    <th>Comentario</th>
-                    <th style="width:120px">Estado</th> 
-                    <th>Recordatorio</th>
-                  </tr>
-                </thead>
-                <tbody id="citasTbody">
-                  <tr>
-                    <td colspan="7" class="no-data">Cargando...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <div class="table-wrap">
+            <table class="appointments-table">
+              <thead>
+                <tr>
+                  <th style="width:110px">Hora</th>
+                  <th>Paciente</th>
+                  <th>Doctor</th>
+                  <th>Espacio físico</th>
+                  <th>Comentario</th>
+                  <th style="width:120px">Estado</th> 
+                  <th>Recordatorio</th>
+                </tr>
+              </thead>
+              <tbody id="citasTbody">
+                <tr><td colspan="7" class="no-data">Cargando...</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </main>
