@@ -169,30 +169,46 @@
       });
     });
 
-    // ======= CARGAR AGENDA (HTML + SCRIPT) =======
-    async function showAgenda() {
-      try {
-        const res = await fetch("modules/agenda.html");
-        if (!res.ok) throw new Error("Error al cargar modules/agenda.html");
-        const html = await res.text();
-        mainEl.innerHTML = html;
+    // ======= CARGAR AGENDA (HTML + CSS + SCRIPT) =======
+async function showAgenda() {
+  try {
+    const res = await fetch("modules/agenda.html");
+    if (!res.ok) throw new Error("Error al cargar modules/agenda.html");
+    const html = await res.text();
+    mainEl.innerHTML = html;
 
-        const script = document.createElement("script");
-        script.type = "module";
-        script.src = "modules/agenda.js";
-        script.onload = () => {
-          if (typeof window.initAgendaCalendar === "function") {
-            window.initAgendaCalendar(db, auth);
-          } else {
-            console.warn("⚠️ No se encontró la función initAgendaCalendar en modules/agenda.js");
-          }
-        };
-        document.body.appendChild(script);
-      } catch (err) {
-        console.error("Error cargando agenda:", err);
-        mainEl.innerHTML = "<p style='color:red'>Error al cargar la agenda.</p>";
-      }
+    // ✅ Cargar el CSS de la agenda (si no existe)
+    const existingLink = document.querySelector("link[data-module='agenda']");
+    if (!existingLink) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "modules/agenda.css?v=" + Date.now(); // cache-busting
+      link.dataset.module = "agenda";
+      document.head.appendChild(link);
     }
+
+    // ⚙️ Eliminar scripts previos de agenda si los hubiera
+    document.querySelectorAll("script[data-module='agenda']").forEach(s => s.remove());
+
+    // ✅ Cargar el JS de la agenda
+    const script = document.createElement("script");
+    script.type = "module";
+    script.dataset.module = "agenda";
+    script.src = "modules/agenda.js?v=" + Date.now(); // evitar caché
+    script.onload = () => {
+      if (typeof window.initAgendaCalendar === "function") {
+        window.initAgendaCalendar(db, auth);
+      } else {
+        console.warn("⚠️ No se encontró la función initAgendaCalendar en modules/agenda.js");
+      }
+    };
+    document.body.appendChild(script);
+  } catch (err) {
+    console.error("Error cargando agenda:", err);
+    mainEl.innerHTML = "<p style='color:red'>Error al cargar la agenda.</p>";
+  }
+}
+
   </script>
 </body>
 </html>
