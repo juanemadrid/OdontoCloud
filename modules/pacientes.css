@@ -1,5 +1,5 @@
 /* =========================================================
-   ESTILOS PACIENTES — versión PRO (OdontoCloud)
+   ESTILOS PACIENTES — versión PRO (OdontoCloud) RESPONSIVE
    ========================================================= */
 
 /* ---------- ESTRUCTURA BASE ---------- */
@@ -12,14 +12,7 @@
   z-index: 1;
   background: #f5f8fb;
   font-family: 'Inter', system-ui, sans-serif;
-
-  /* 🔧 AJUSTE DE ALTURA SUPERIOR (FRANJA VERDE + AZUL)
-     --------------------------------------------------
-     Usa este valor para igualar la altura con Agenda.
-     - Si la franja de Paciente está demasiado alta → usa un número más pequeño (por ejemplo, -5px o 0)
-     - Si está demasiado baja → usa un número más grande (por ejemplo, -15px o -20px)
-  */
-  margin-top: -20px; /* ← Ajusta este valor a tu gusto */
+  margin-top: -20px; /* Ajuste superior */
 }
 
 /* ---------- TOPBARS ---------- */
@@ -83,13 +76,14 @@
 .odc-btn-cancel { background-color: #b71c1c; color: white; }
 .odc-btn-search { background-color: #0288d1; color: white; }
 
-/* ---------- TABLA PACIENTES ---------- */
+/* ---------- TARJETA Y TABLA ---------- */
 .odc-card {
   background: white;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   padding: 1.2rem 1.4rem;
   transition: all 0.2s ease;
+  overflow-x: auto; /* ✅ Permite hacer scroll horizontal en móviles */
 }
 
 .odc-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
@@ -98,6 +92,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
+  min-width: 600px; /* ✅ Evita que se deforme la tabla en móviles */
 }
 
 .odc-table th {
@@ -105,6 +100,7 @@
   text-align: left;
   padding: 0.6rem;
   color: #0d47a1;
+  white-space: nowrap;
 }
 
 .odc-table td {
@@ -119,9 +115,8 @@
 }
 
 /* ==========================================================
-   🔽 FORMULARIO NUEVO PACIENTE (moderno, visible, responsive)
+   🔽 FORMULARIO NUEVO PACIENTE
 ========================================================== */
-
 .odc-modal {
   position: fixed;
   top: 0; left: 0;
@@ -219,7 +214,7 @@
   margin-top: 5px;
 }
 
-/* ---------- TITULARES DE SECCIONES ---------- */
+/* ---------- TITULARES ---------- */
 .form-section-title {
   font-size: 17px;
   font-weight: 600;
@@ -230,7 +225,7 @@
   margin-bottom: 12px;
 }
 
-/* ---------- GRID GENERAL ---------- */
+/* ---------- GRID ---------- */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -265,76 +260,44 @@ textarea.form-input {
   background: #f2f2f2;
   border-top: 1px solid #e5e5e5;
   border-radius: 0 0 12px 12px;
+  flex-wrap: wrap;
 }
 
-.btn-principal {
-  background-color: #1abc9c;
-  color: #fff;
-  border: none;
+.btn-principal,
+.btn-secundario {
   border-radius: 6px;
   padding: 10px 18px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
 }
+
+.btn-principal {
+  background-color: #1abc9c;
+  color: #fff;
+}
 .btn-principal:hover { background-color: #16a085; }
 
 .btn-secundario {
   background-color: #bdc3c7;
   color: #333;
-  border: none;
-  border-radius: 6px;
-  padding: 10px 18px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
 }
 .btn-secundario:hover { background-color: #aeb6bf; }
 
 /* ---------- SCROLL ---------- */
-.odc-modal-dialog::-webkit-scrollbar {
-  width: 10px;
-}
+.odc-modal-dialog::-webkit-scrollbar { width: 10px; }
 .odc-modal-dialog::-webkit-scrollbar-thumb {
   background-color: #bbb;
   border-radius: 10px;
 }
-.odc-modal-dialog::-webkit-scrollbar-thumb:hover {
-  background-color: #999;
-}
+.odc-modal-dialog::-webkit-scrollbar-thumb:hover { background-color: #999; }
 
-/* ---------- RESPONSIVE ---------- */
-@media (max-width: 768px) {
-  .odc-modal-dialog {
-    width: 95%;
-    padding: 5px;
-  }
-
-  .odc-modal-header h3 {
-    font-size: 18px;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .odc-modal-footer {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
-/* ---------- RESPONSIVE ---------- */
+/* ======================================================
+   🔧 RESPONSIVE MEJORADO
+====================================================== */
 @media (max-width: 992px) {
-  .odc-modal-body {
-    grid-template-columns: 1fr;
-    padding: 1.2rem;
-  }
-  .odc-foto-container {
-    position: static;
-    margin: 0 auto 0.9rem;
-    max-width: 360px;
-  }
+  .odc-modal-body { padding: 1.2rem; }
+  .odc-foto-container { margin: 0 auto 1rem; max-width: 320px; }
 }
 
 @media (max-width: 768px) {
@@ -342,129 +305,23 @@ textarea.form-input {
     width: 95%;
     max-width: none;
     height: 95vh;
+    padding: 4px;
   }
-  .odc-modal-body {
-    padding: 1rem;
-  }
-}
-/* ======================================================
-   🔧 BLOQUE FINAL RESPONSIVE AVANZADO (SIN CAMBIAR DISEÑO)
-   Hace que toda la agenda se vea bien en móviles y tablets
-====================================================== */
-
-@media (max-width: 768px) {
-  .odc-agenda-inner {
-    flex-direction: column;
-    padding: 12px;
-    gap: 12px;
-  }
-
-  .odc-left {
-    width: 100%;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .odc-right {
-    width: 100%;
-    padding: 14px;
-    box-shadow: none;
-  }
-
-  .odc-header-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-
-  .odc-header-left,
-  .odc-header-right {
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-  }
-
-  .odc-title {
-    font-size: 18px;
-    text-align: center;
-  }
-
-  .right-actions {
-    justify-content: center;
-    right: 0;
-    margin-top: 6px;
-  }
-
-  .search-input {
-    width: 100%;
-    min-width: 0;
-  }
-
-  #btnNuevaCita {
-    width: 100%;
-    margin: 6px 0 0 0;
-  }
-
-  .appointments-table {
-    min-width: 100%;
-    font-size: 13px;
-  }
-
-  .table-wrap {
-    max-height: none;
-    overflow-x: auto;
-  }
-
-  .mini-month-table {
-    font-size: 12px;
-  }
-
-  .odc-mini-calendar-card,
-  .odc-filters-card {
-    padding: 12px;
-  }
-
-  .tools-right {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .tools-right .btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .current-date {
-    font-size: 13px;
-    text-align: center;
-  }
-
-  .odc-agenda-root {
-    margin-top: 15px;
-  }
+  .odc-modal-header h3 { font-size: 18px; }
+  .form-grid { grid-template-columns: 1fr; gap: 10px; }
+  .odc-modal-body { padding: 1rem; }
+  .odc-modal-footer { flex-direction: column; align-items: stretch; }
+  .odc-btn, .btn-principal, .btn-secundario { width: 100%; }
+  .odc-card { padding: 1rem; }
+  .odc-table { font-size: 13px; }
 }
 
 @media (max-width: 480px) {
-  .odc-title {
-    font-size: 16px;
+  .odc-modal-header h3 { font-size: 16px; }
+  .form-input, .btn-principal, .btn-secundario {
+    font-size: 13px;
+    padding: 8px 10px;
   }
-
-  .btn,
-  .search-input {
-    font-size: 12px;
-    padding: 6px 8px;
-  }
-
-  .odc-header-bar {
-    padding: 10px;
-  }
-
-  .odc-filters-card label {
-    font-size: 12px;
-  }
-
-  .appointments-table th,
-  .appointments-table td {
-    padding: 8px 6px;
-  }
+  .odc-table th, .odc-table td { padding: 8px 6px; }
+  .odc-topbar-blue { font-size: 16px; padding: 10px 18px; }
 }
