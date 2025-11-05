@@ -514,7 +514,7 @@
 }
 
 /* ======================================================
-   🔧 BLOQUE FINAL RESPONSIVE AVANZADO (TUYO ORIGINAL)
+   BLOQUE RESPONSIVE ORIGINAL
    ====================================================== */
 @media (max-width: 1000px) {
   .odc-agenda-inner {
@@ -654,16 +654,14 @@
 }
 
 /* ======================================================
-   ✅ MOBILE FIX REAL — NO TOQUES PC, SOLO MÓVIL
+   ✅ FIX MÓVIL REAL — SOLO CAMBIA POSICIONES
    ====================================================== */
 @media (max-width: 768px) {
 
-  /* Mostrar completamente barra azul + verde */
   .odc-agenda-root {
     margin-top: 135px !important;
   }
 
-  /* Layout móvil: dos columnas */
   .odc-agenda-inner {
     flex-direction: row !important;
     flex-wrap: wrap;
@@ -680,28 +678,7 @@
     width: 58% !important;
   }
 
-  /* Mini calendario compactado */
   .odc-mini-calendar-card {
-    padding: 8px !important;
+    padding: 8px !important
+ }
   }
-
-  /* Filtros compactados */
-  .odc-filters-card {
-    padding: 8px !important;
-  }
-}
-
-/* ✅ Ajuste extra para pantallas muy pequeñas */
-@media (max-width: 450px) {
-  .odc-left {
-    width: 100% !important;
-    flex-direction: row;
-  }
-  .odc-mini-calendar-card,
-  .odc-filters-card {
-    flex: 1;
-  }
-  .odc-right {
-    width: 100% !important;
-  }
-}
