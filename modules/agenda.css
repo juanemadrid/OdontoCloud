@@ -6,8 +6,8 @@
   --primary-light: #e6f0ff;
   --primary-dark: #1e4e8c;
   --accent-green: #38a169;
-  --bg-light: #dfe2e6; /* 🔹 Fondo gris más oscuro */
-  --bg-panel: #f1f3f6; /* 🔹 Panel principal ligeramente más oscuro */
+  --bg-light: #dfe2e6;
+  --bg-panel: #f1f3f6;
   --border: #d0d6dc;
   --text: #1f2937;
   --muted: #6b7280;
@@ -514,7 +514,7 @@
 }
 
 /* ======================================================
-   🔧 BLOQUE FINAL RESPONSIVE AVANZADO
+   🔧 BLOQUE FINAL RESPONSIVE AVANZADO (TUYO ORIGINAL)
    ====================================================== */
 @media (max-width: 1000px) {
   .odc-agenda-inner {
@@ -628,7 +628,7 @@
     text-align: center;
   }
   .odc-agenda-root {
-    margin-top: 120px; /* FIX AÑADIDO */
+    margin-top: 120px;
   }
 }
 
@@ -650,5 +650,58 @@
   .appointments-table th,
   .appointments-table td {
     padding: 8px 6px;
+  }
+}
+
+/* ======================================================
+   ✅ MOBILE FIX REAL — NO TOQUES PC, SOLO MÓVIL
+   ====================================================== */
+@media (max-width: 768px) {
+
+  /* Mostrar completamente barra azul + verde */
+  .odc-agenda-root {
+    margin-top: 135px !important;
+  }
+
+  /* Layout móvil: dos columnas */
+  .odc-agenda-inner {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .odc-left {
+    width: 42% !important;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .odc-right {
+    width: 58% !important;
+  }
+
+  /* Mini calendario compactado */
+  .odc-mini-calendar-card {
+    padding: 8px !important;
+  }
+
+  /* Filtros compactados */
+  .odc-filters-card {
+    padding: 8px !important;
+  }
+}
+
+/* ✅ Ajuste extra para pantallas muy pequeñas */
+@media (max-width: 450px) {
+  .odc-left {
+    width: 100% !important;
+    flex-direction: row;
+  }
+  .odc-mini-calendar-card,
+  .odc-filters-card {
+    flex: 1;
+  }
+  .odc-right {
+    width: 100% !important;
   }
 }
