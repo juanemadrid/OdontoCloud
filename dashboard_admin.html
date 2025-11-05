@@ -27,7 +27,7 @@
   <header class="topbar-main">
     <div class="top-main-inner">
       <div class="logo-section">
-        <img src="assets/logo.png" alt="OdontoCloud" class="logo-top" />
+        <img src="assets/logo.png" alt="OdontoCloud" class="logo-top">
         <span class="brand-text">OdontoCloud</span>
       </div>
 
@@ -57,7 +57,7 @@
     <p>Selecciona un módulo del menú superior para comenzar.</p>
   </main>
 
-  <footer class="footer">© 2025 OdontoCloud Software | Desarrollado por ingeniero Juan Madrid</footer>
+  <footer class="footer">© 2025 OdontoCloud Software | Desarrollado por ingeniero juan madrid</footer>
 
   <!-- ======= JS GENERAL ======= -->
   <script type="module">
@@ -65,6 +65,7 @@
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyC70mGCRrjE8iOap8iTHuid8HEuyadue8Y",
       authDomain: "odontocloud-d92ac.firebaseapp.com",
@@ -72,7 +73,7 @@
       storageBucket: "odontocloud-d92ac.appspot.com",
       messagingSenderId: "267020714981",
       appId: "1:267020714981:web:a44416ea83aa1d1172650c",
-      measurementId: "G-ZMCC5CFY0C",
+      measurementId: "G-ZMCC5CFY0C"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -92,7 +93,11 @@
       nombreUsuario.textContent = user.displayName || user.email || "Usuario";
       const ref = doc(db, "empresas", user.uid);
       const snap = await getDoc(ref);
-      nombreEmpresa.textContent = snap.exists() ? snap.data().nombre || "Sin nombre" : "Empresa no registrada";
+      if (snap.exists()) {
+        nombreEmpresa.textContent = snap.data().nombre || "Sin nombre";
+      } else {
+        nombreEmpresa.textContent = "Empresa no registrada";
+      }
     });
 
     // ======= MODO OSCURO =======
@@ -105,10 +110,11 @@
     });
 
     // ======= NAVEGACIÓN ENTRE MÓDULOS =======
-    document.querySelectorAll(".menu-main a[data-module]").forEach((link) => {
+    document.querySelectorAll(".menu-main a[data-module]").forEach(link => {
       link.addEventListener("click", async (e) => {
         e.preventDefault();
         const module = link.dataset.module;
+
         mainEl.innerHTML = "<p>Cargando módulo...</p>";
 
         switch (module) {
@@ -119,18 +125,31 @@
           case "pacientes":
             try {
               const res = await fetch("modules/pacientes.html");
-              if (!res.ok) throw new Error("Error al cargar Pacientes");
+              if (!res.ok) throw new Error("Error al cargar el módulo Pacientes.");
               const html = await res.text();
               mainEl.innerHTML = html;
 
-              document.querySelectorAll("script[data-module='pacientes']").forEach((s) => s.remove());
+              // ⚙️ Eliminar cualquier script previo de pacientes
+              document.querySelectorAll("script[data-module='pacientes']").forEach(s => s.remove());
+
+              // ⚙️ Carga dinámica del JS de pacientes
               const script = document.createElement("script");
               script.type = "module";
               script.dataset.module = "pacientes";
-              script.src = "modules/pacientes.js?v=" + Date.now();
-              script.onload = () => window.initPacientes?.(db, auth);
+              script.src = "modules/pacientes.js";
+
+              // ✅ Esperar a que el script se cargue y ejecutar función init si existe
+              script.onload = () => {
+                if (typeof window.initPacientes === "function") {
+                  window.initPacientes(db, auth);
+                } else {
+                  console.warn("⚠️ No se encontró la función initPacientes en pacientes.js");
+                }
+              };
+
               document.body.appendChild(script);
             } catch (err) {
+              console.error(err);
               mainEl.innerHTML = "<p style='color:red'>Error al cargar el módulo Pacientes.</p>";
             }
             break;
@@ -150,34 +169,46 @@
       });
     });
 
-    // ======= CARGAR AGENDA =======
-    async function showAgenda() {
-      try {
-        const res = await fetch("modules/agenda.html");
-        if (!res.ok) throw new Error("Error al cargar modules/agenda.html");
-        const html = await res.text();
-        mainEl.innerHTML = html;
+    // ======= CARGAR AGENDA (HTML + CSS + SCRIPT) =======
+async function showAgenda() {
+  try {
+    const res = await fetch("modules/agenda.html");
+    if (!res.ok) throw new Error("Error al cargar modules/agenda.html");
+    const html = await res.text();
+    mainEl.innerHTML = html;
 
-        const existingLink = document.querySelector("link[data-module='agenda']");
-        if (!existingLink) {
-          const link = document.createElement("link");
-          link.rel = "stylesheet";
-          link.href = "modules/agenda.css?v=" + Date.now();
-          link.dataset.module = "agenda";
-          document.head.appendChild(link);
-        }
-
-        document.querySelectorAll("script[data-module='agenda']").forEach((s) => s.remove());
-        const script = document.createElement("script");
-        script.type = "module";
-        script.dataset.module = "agenda";
-        script.src = "modules/agenda.js?v=" + Date.now();
-        script.onload = () => window.initAgendaCalendar?.(db, auth);
-        document.body.appendChild(script);
-      } catch (err) {
-        mainEl.innerHTML = "<p style='color:red'>Error al cargar la agenda.</p>";
-      }
+    // ✅ Cargar el CSS de la agenda (si no existe)
+    const existingLink = document.querySelector("link[data-module='agenda']");
+    if (!existingLink) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "modules/agenda.css?v=" + Date.now(); // cache-busting
+      link.dataset.module = "agenda";
+      document.head.appendChild(link);
     }
+
+    // ⚙️ Eliminar scripts previos de agenda si los hubiera
+    document.querySelectorAll("script[data-module='agenda']").forEach(s => s.remove());
+
+    // ✅ Cargar el JS de la agenda
+    const script = document.createElement("script");
+    script.type = "module";
+    script.dataset.module = "agenda";
+    script.src = "modules/agenda.js?v=" + Date.now(); // evitar caché
+    script.onload = () => {
+      if (typeof window.initAgendaCalendar === "function") {
+        window.initAgendaCalendar(db, auth);
+      } else {
+        console.warn("⚠️ No se encontró la función initAgendaCalendar en modules/agenda.js");
+      }
+    };
+    document.body.appendChild(script);
+  } catch (err) {
+    console.error("Error cargando agenda:", err);
+    mainEl.innerHTML = "<p style='color:red'>Error al cargar la agenda.</p>";
+  }
+}
+
   </script>
 </body>
 </html>
