@@ -1,5 +1,5 @@
 /* ===============================
-   AGENDA - Versión profesional optimizada y responsive
+   AGENDA - Versión profesional
    =============================== */
 
 :root {
@@ -40,7 +40,7 @@
   gap: 20px;
 }
 
-/* Tarjeta general */
+/* Tarjeta de mini calendario */
 .odc-mini-calendar-card,
 .odc-filters-card {
   background: var(--white);
@@ -50,7 +50,7 @@
   border: 1px solid var(--border);
 }
 
-/* ===== Calendario ===== */
+/* Mini calendario */
 .mini-cal-header {
   display: flex;
   justify-content: space-between;
@@ -93,7 +93,7 @@
   background: var(--primary-light);
 }
 
-/* ===== Filtros ===== */
+/* Filtros */
 .odc-filters-card label {
   display: block;
   font-weight: 600;
@@ -110,19 +110,6 @@
   background: #fff;
 }
 
-/* Contenedor conjunto (Calendario + Filtros) */
-.odc-left-combined {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.odc-mini-calendar-card,
-.odc-filters-card {
-  flex: 1;
-  min-width: 260px;
-}
-
 /* ===============================
    PANEL DERECHO
    =============================== */
@@ -135,7 +122,6 @@
 /* Barra superior */
 .odc-header-bar {
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   background: var(--white);
@@ -145,13 +131,13 @@
   border: 1px solid var(--border);
 }
 
+/* Título */
 .odc-title {
   color: var(--primary-dark);
   margin-right: 20px;
-  font-weight: 600;
-  font-size: 1.2rem;
 }
 
+/* Botones de vista */
 .view-buttons {
   display: flex;
   gap: 8px;
@@ -172,6 +158,7 @@
   border-color: var(--primary);
 }
 
+/* Navegación de fecha */
 .date-nav {
   display: flex;
   align-items: center;
@@ -192,6 +179,7 @@
   color: var(--primary-dark);
 }
 
+/* Acciones de la derecha */
 .right-actions {
   display: flex;
   align-items: center;
@@ -251,7 +239,7 @@
   cursor: pointer;
 }
 
-/* Tabla */
+/* Tabla de citas */
 .table-wrap {
   overflow-x: auto;
 }
@@ -294,24 +282,13 @@
   .odc-agenda-inner {
     grid-template-columns: 1fr;
   }
-
-  .odc-left-combined {
-    flex-direction: column;
+  .odc-left {
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 15px;
   }
-
   .odc-mini-calendar-card,
   .odc-filters-card {
-    width: 100%;
-  }
-
-  .odc-header-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .search-input {
-    width: 100%;
+    flex: 1;
   }
 }
