@@ -24,7 +24,7 @@
   font-family: "Inter", "Segoe UI", sans-serif;
   color: var(--text);
   box-sizing: border-box;
-  margin-top: 80px; /* ✅ Aumentado: asegura que 'Agenda' se vea siempre visible */
+  margin-top: 60px; /* ✅ Ajuste: evita que 'Agenda' quede tapado */
   position: relative;
   z-index: 1;
 }
@@ -206,7 +206,6 @@
   font-weight: 700;
   color: var(--primary-dark);
   margin: 0;
-  padding-top: 8px; /* ✅ Pequeño empuje visual hacia abajo */
 }
 
 /* Botones de vista */
@@ -380,6 +379,100 @@
   align-items: center;
 }
 
+/* Botones herramientas */
+.tools-right .btn {
+  background-color: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.tools-right .btn:hover {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+.tools-right .btn:active {
+  transform: scale(0.98);
+}
+
+#btnPrint:hover {
+  background: #38a169;
+  box-shadow: 0 6px 15px rgba(56,161,105,0.3);
+  transform: translateY(-2px);
+}
+
+/* ----------- TABLE ----------- */
+.table-wrap {
+  overflow-y: auto;
+  max-height: calc(100vh - 280px);
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.appointments-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: left;
+  min-width: 720px;
+}
+
+.appointments-table thead th {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-weight: 600;
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.appointments-table tbody td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.appointments-table tr:hover td {
+  background: var(--primary-light);
+}
+
+.estado {
+  display: inline-block;
+  padding: 6px 8px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(56,161,105,0.12);
+  color: var(--accent-green);
+}
+
+.estado.sin-deuda {
+  background: rgba(255,229,100,0.12);
+  color: #b7791f;
+}
+
+.no-data {
+  text-align: center;
+  color: var(--muted);
+  padding: 20px;
+  font-style: italic;
+}
+
+.fade-in-row {
+  animation: fadeIn 240ms ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* ----------- TOPBARS ----------- */
 .odc-topbar-green {
   height: 6px;
@@ -402,12 +495,7 @@
    ====================================================== */
 @media (max-width: 1000px) {
   .odc-agenda-inner { flex-direction: column; }
-  .odc-left { 
-    width: 100%; 
-    flex-direction: row; 
-    gap: 12px; 
-    align-items: flex-start; 
-  }
+  .odc-left { width: 100%; flex-direction: row; gap: 12px; align-items: flex-start; }
   .odc-filters-card, .odc-mini-calendar-card { flex: 1; }
   .appointments-table { min-width: 100%; }
 }
@@ -421,13 +509,8 @@
 
   .odc-left {
     width: 100%;
-    flex-direction: row; /* ✅ Ahora calendario y filtros quedan lado a lado */
+    flex-direction: column;
     gap: 12px;
-    align-items: stretch;
-  }
-
-  .odc-filters-card, .odc-mini-calendar-card {
-    flex: 1;
   }
 
   .odc-right {
