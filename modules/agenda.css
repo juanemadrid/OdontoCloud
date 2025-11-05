@@ -1,4 +1,4 @@
-/* ===============================
+/* =============================== 
    AGENDA (Versión con Fondo Gris + Recuadro Flotante Mejorado)
    =============================== */
 :root {
@@ -35,14 +35,16 @@
   flex-wrap: wrap; /* 🔹 mejora responsive */
 }
 
-/* ----------- LEFT PANEL ----------- */
+/* ----------- LEFT PANEL (ajustado) ----------- */
 .odc-left {
-  width: 260px;
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  flex-direction: row; /* 🔹 cambiado de column a row */
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap; /* 🔹 mantiene responsive */
   box-sizing: border-box;
-  flex-shrink: 0;
 }
 
 .odc-mini-calendar-card,
@@ -52,6 +54,18 @@
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   padding: 16px;
   box-sizing: border-box;
+}
+
+/* Ajustes individuales */
+.odc-mini-calendar-card {
+  flex: 1;
+  min-width: 260px;
+}
+
+.odc-filters-card {
+  flex: 1;
+  min-width: 220px;
+  align-self: flex-start;
 }
 
 /* Mini calendario */
@@ -522,7 +536,7 @@
    ====================================================== */
 @media (max-width: 1000px) {
   .odc-agenda-inner { flex-direction: column; }
-  .odc-left { width: 100%; flex-direction: row; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+  .odc-left { flex-direction: column; width: 100%; gap: 12px; }
   .odc-filters-card, .odc-mini-calendar-card { flex: 1; }
   .appointments-table { min-width: 100%; }
 }
