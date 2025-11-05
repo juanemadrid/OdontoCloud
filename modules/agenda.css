@@ -1,297 +1,325 @@
-/* ===============================
-   AGENDA - Versión profesional final
-   =============================== */
+<!-- ===============================
+     AGENDA - VERSIÓN PROFESIONAL
+     =============================== -->
 
+<div class="odc-agenda-root">
+  <!-- Franja superior -->
+  <div class="odc-header-section">
+    <h2>Agenda</h2>
+  </div>
+
+  <!-- Contenedor general -->
+  <div class="odc-agenda-container">
+    <div class="odc-agenda-content">
+      <!-- Fila superior: vista y controles -->
+      <div class="odc-toolbar">
+        <div class="toolbar-left">
+          <button class="btn-view active">Día</button>
+          <button class="btn-view">Semana</button>
+          <button class="btn-view">Detalle</button>
+        </div>
+
+        <div class="toolbar-center">
+          <button class="btn-icon" title="Anterior">&#8249;</button>
+          <span class="current-date">5 de noviembre de 2025</span>
+          <button class="btn-icon" title="Siguiente">&#8250;</button>
+          <button class="btn-today">Hoy</button>
+        </div>
+
+        <div class="toolbar-right">
+          <button class="btn-new">+ Nueva cita</button>
+        </div>
+      </div>
+
+      <!-- Fila de filtros -->
+      <div class="odc-filters">
+        <div>
+          <label>Sucursal</label>
+          <select>
+            <option>— Todas —</option>
+          </select>
+        </div>
+        <div>
+          <label>Doctores</label>
+          <select>
+            <option>— Todos —</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Mini calendario -->
+      <div class="odc-mini-calendar">
+        <div class="calendar-header">
+          <button class="btn-icon">&#8249;</button>
+          <span class="month-label">noviembre de 2025</span>
+          <button class="btn-icon">&#8250;</button>
+        </div>
+        <table class="calendar-table">
+          <thead>
+            <tr>
+              <th>Lu</th><th>Ma</th><th>Mi</th><th>Ju</th><th>Vi</th><th>Sa</th><th>Do</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td></tr>
+            <tr><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tabla de citas -->
+      <div class="odc-table-section">
+        <div class="tools">
+          <div class="tools-left">
+            <strong>Ocupación:</strong> 0 / 18 (0%)
+          </div>
+          <div class="tools-right">
+            <button class="btn blue">Imprimir</button>
+            <button class="btn green">Confirmar</button>
+            <button class="btn blue">Exportar</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="appointments-table">
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Paciente</th>
+                <th>Doctor</th>
+                <th>Espacio físico</th>
+                <th>Comentario</th>
+                <th>Estado</th>
+                <th>Recordatorio</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="7" class="no-data">No hay citas registradas para esta fecha.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===============================
+     CSS - ESTILO PROFESIONAL
+     =============================== -->
+<style>
 :root {
-  --primary: #2b6cb0;
-  --primary-light: #e6f0ff;
-  --primary-dark: #1e4a8a;
+  --primary: #007bff;
+  --primary-dark: #0056b3;
+  --primary-light: #e8f1ff;
   --green: #38a169;
   --gray-bg: #f5f7fb;
-  --white: #fff;
   --border: #dce0e8;
-  --shadow: rgba(0, 0, 0, 0.08);
+  --white: #fff;
+  --shadow: rgba(0,0,0,0.08);
 }
 
 /* Fondo general */
 .odc-agenda-root {
-  display: flex;
-  justify-content: center;
-  padding: 35px;
   background: var(--gray-bg);
+  padding: 30px;
   min-height: calc(100vh - 120px);
-  box-sizing: border-box;
 }
 
-.odc-agenda-inner {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 30px;
-  width: 100%;
-  max-width: 1450px;
+/* Franja superior */
+.odc-header-section {
+  background: var(--primary-dark);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px 8px 0 0;
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 0;
+  box-shadow: 0 3px 6px var(--shadow);
 }
 
-/* ===============================
-   PANEL IZQUIERDO
-   =============================== */
-.odc-left {
+/* Contenedor principal */
+.odc-agenda-container {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 3px 10px var(--shadow);
+  padding: 20px;
+}
+
+/* Contenido interno */
+.odc-agenda-content {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 20px;
 }
 
-/* Tarjetas: calendario y filtros */
-.odc-mini-calendar-card,
-.odc-filters-card {
-  background: var(--white);
-  border-radius: 14px;
-  padding: 20px;
-  box-shadow: 0 4px 12px var(--shadow);
+/* Toolbar superior */
+.odc-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.toolbar-left {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-view {
+  padding: 6px 12px;
   border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #f8f9fa;
+  cursor: pointer;
   transition: all 0.2s ease;
+  color: #333;
+  font-weight: 500;
 }
 
-.odc-mini-calendar-card:hover,
-.odc-filters-card:hover {
-  transform: translateY(-2px);
+.btn-view.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.btn-icon {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.btn-today {
+  background: var(--green);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-new {
+  background: var(--green);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Filtros */
+.odc-filters {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.odc-filters label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.odc-filters select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
 }
 
 /* Mini calendario */
-.mini-cal-header {
+.odc-mini-calendar {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 15px;
+  background: var(--white);
+  box-shadow: 0 2px 6px var(--shadow);
+  width: 280px;
+}
+
+.calendar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-weight: 600;
-  margin-bottom: 12px;
   color: var(--primary-dark);
+  margin-bottom: 10px;
 }
 
-.cal-arrow {
-  border: none;
-  background: var(--primary);
-  color: white;
-  border-radius: 6px;
-  width: 30px;
-  height: 30px;
-  font-size: 15px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.cal-arrow:hover {
-  background: var(--primary-dark);
-}
-
-.mini-month-table {
+.calendar-table {
   width: 100%;
   border-collapse: collapse;
   text-align: center;
   font-size: 0.9rem;
 }
 
-.mini-month-table th {
+.calendar-table th {
   color: var(--primary-dark);
   font-weight: 600;
-  padding-bottom: 6px;
+  padding-bottom: 5px;
 }
 
-.mini-month-table td {
+.calendar-table td {
   padding: 6px 0;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background 0.2s;
 }
 
-.mini-month-table td:hover {
+.calendar-table td:hover {
   background: var(--primary-light);
 }
 
-/* Filtros */
-.odc-filters-card label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: #333;
-}
-
-.odc-filters-card select {
-  width: 100%;
-  padding: 9px 11px;
-  border-radius: 6px;
+/* Tabla de citas */
+.odc-table-section {
   border: 1px solid var(--border);
-  margin-bottom: 12px;
-  background: #fff;
-  transition: 0.2s;
+  border-radius: 8px;
+  padding: 15px;
+  background: var(--white);
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
-.odc-filters-card select:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1);
-  outline: none;
-}
-
-/* ===============================
-   PANEL DERECHO
-   =============================== */
-.odc-right {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-}
-
-/* Barra superior */
-.odc-header-bar {
+.tools {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--white);
-  border-radius: 14px;
-  padding: 15px 20px;
-  box-shadow: 0 4px 12px var(--shadow);
-  border: 1px solid var(--border);
-}
-
-/* Título */
-.odc-title {
-  color: var(--primary-dark);
-  margin-right: 20px;
-  font-weight: 600;
-  font-size: 1.1rem;
-}
-
-/* Botones de vista */
-.view-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.btn.view {
-  padding: 6px 12px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: #fff;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
-}
-
-.btn.view.active {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-}
-
-.btn.view:hover {
-  background: var(--primary-light);
-}
-
-/* Navegación de fecha */
-.date-nav {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.date-nav .btn.icon {
-  background: var(--primary);
-  color: white;
-  border-radius: 6px;
-  width: 30px;
-  height: 30px;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.date-nav .btn.icon:hover {
-  background: var(--primary-dark);
-}
-
-#currentDateDisplay {
-  font-weight: 600;
-  color: var(--primary-dark);
-  font-size: 0.95rem;
-}
-
-/* Acciones de la derecha */
-.right-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.search-input {
-  padding: 7px 10px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  min-width: 180px;
-  transition: all 0.2s ease;
-}
-
-.search-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1);
-  outline: none;
-}
-
-.btn.green {
-  background: var(--green);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 14px;
-  cursor: pointer;
-  transition: 0.2s;
-  font-size: 0.9rem;
-}
-
-.btn.green:hover {
-  background: #2f855a;
-}
-
-/* ===============================
-   CONTENIDO PRINCIPAL
-   =============================== */
-.odc-content-card {
-  background: var(--white);
-  border-radius: 14px;
-  box-shadow: 0 4px 12px var(--shadow);
-  border: 1px solid var(--border);
-  padding: 18px;
-}
-
-.tools-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  flex-wrap: wrap;
-  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .tools-right {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+}
+
+.btn {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 500;
 }
 
 .btn.blue {
   background: var(--primary);
   color: #fff;
-  border-radius: 6px;
   border: none;
-  padding: 8px 12px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: 0.2s;
 }
 
-.btn.blue:hover {
-  background: var(--primary-dark);
+.btn.green {
+  background: var(--green);
+  color: #fff;
+  border: none;
 }
 
-/* Tabla de citas */
 .table-wrap {
   overflow-x: auto;
 }
@@ -301,13 +329,10 @@
   border-collapse: collapse;
 }
 
-.appointments-table th,
-.appointments-table td {
+.appointments-table th, .appointments-table td {
+  padding: 10px 8px;
   border-bottom: 1px solid var(--border);
   text-align: left;
-  padding: 10px 8px;
-  font-size: 0.95rem;
-  color: #333;
 }
 
 .appointments-table th {
@@ -322,42 +347,13 @@
   padding: 20px 0;
 }
 
-/* ===============================
-   RESPONSIVE
-   =============================== */
-@media (max-width: 1100px) {
-  .odc-agenda-inner {
-    grid-template-columns: 260px 1fr;
-    gap: 20px;
+/* Responsive */
+@media (max-width: 768px) {
+  .odc-filters {
+    flex-direction: column;
   }
-}
-
-@media (max-width: 900px) {
-  .odc-agenda-inner {
-    grid-template-columns: 1fr;
-  }
-  .odc-left {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-  .odc-mini-calendar-card,
-  .odc-filters-card {
-    flex: 1;
-  }
-}
-
-@media (max-width: 600px) {
-  .odc-agenda-root {
-    padding: 20px;
-  }
-  .btn.green,
-  .btn.blue,
-  .btn.view {
+  .odc-mini-calendar {
     width: 100%;
   }
-  .right-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
 }
+</style>
