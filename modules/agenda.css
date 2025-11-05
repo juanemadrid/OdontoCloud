@@ -508,186 +508,51 @@
  box-shadow: 0 3px 8px rgba(0,0,0,0.12); 
  position: relative; 
  z-index: 5; 
+ text-align: left; 
 } 
 
-/* ====================================================== 🔧 BLOQUE FINAL RESPONSIVE AVANZADO (TUYO ORIGINAL) ====================================================== */ 
-@media (max-width: 1000px) { 
- .odc-agenda-inner { 
-  flex-direction: column; 
- } 
- .odc-left { 
-  width: 100%; 
-  flex-direction: row; 
-  gap: 12px; 
-  align-items: flex-start; 
- } 
- .odc-filters-card, .odc-mini-calendar-card { 
-  flex: 1; 
- } 
- .appointments-table { 
-  min-width: 100%; 
- } 
-} 
-
-@media (max-width: 700px) { 
- .odc-header-bar { 
-  flex-direction: column; 
-  align-items: stretch; 
- } 
- .odc-header-right { 
-  justify-content: center; 
- } 
- .odc-left { 
-  flex-direction: column; 
-  width: 100%; 
- } 
- .current-date { 
-  min-width: auto; 
-  text-align: left; 
- } 
- .search-input { 
-  min-width: 120px; 
- } 
-} 
-
+/* ====================================================== ✅ MOBILE FIX REAL ====================================================== */ 
 @media (max-width: 768px) { 
- .odc-agenda-inner { 
-  flex-direction: column; 
-  padding: 12px; 
-  gap: 12px; 
- } 
- .odc-left { 
-  width: 100%; 
-  flex-direction: column; 
-  gap: 12px; 
- } 
- .odc-right { 
-  width: 100%; 
-  padding: 14px; 
-  box-shadow: none; 
- } 
- .odc-header-bar { 
-  flex-direction: column; 
-  align-items: stretch; 
-  gap: 12px; 
- } 
- .odc-header-left, .odc-header-right { 
-  flex-direction: column; 
-  align-items: stretch; 
-  width: 100%; 
- } 
- .odc-title { 
-  font-size: 18px; 
-  text-align: center; 
- } 
- .right-actions { 
-  justify-content: center; 
-  right: 0; 
-  margin-top: 6px; 
- } 
- .search-input { 
-  width: 100%; 
-  min-width: 0; 
- } 
- #btnNuevaCita { 
-  width: 100%; 
-  margin: 6px 0 0 0; 
- } 
- .appointments-table { 
-  min-width: 100%; 
-  font-size: 13px; 
- } 
- .table-wrap { 
-  max-height: none; 
-  overflow-x: auto; 
- } 
- .mini-month-table { 
-  font-size: 12px; 
- } 
- .odc-mini-calendar-card, .odc-filters-card { 
-  padding: 12px; 
- } 
- .tools-right { 
-  flex-wrap: wrap; 
-  justify-content: center; 
- } 
- .tools-right .btn { 
-  width: 100%; 
-  justify-content: center; 
- } 
- .current-date { 
-  font-size: 13px; 
-  text-align: center; 
- } 
  .odc-agenda-root { 
-  margin-top: 120px; 
+  margin-top: 165px !important; /* asegura que la franja azul y verde se vean completas */ 
  } 
-} 
-
-@media (max-width: 480px) { 
- .odc-title { 
-  font-size: 16px; 
- } 
- .btn, .search-input { 
-  font-size: 12px; 
-  padding: 6px 8px; 
- } 
- .odc-header-bar { 
-  padding: 10px; 
- } 
- .odc-filters-card label { 
-  font-size: 12px; 
- } 
- .appointments-table th, .appointments-table td { 
-  padding: 8px 6px; 
- } 
-} 
-
-/* ====================================================== ✅ MOBILE FIX REAL — NO TOQUES PC, SOLO MÓVIL ====================================================== */ 
-@media (max-width: 768px) { 
- /* Mostrar completamente barra azul + verde */ 
- .odc-agenda-root { 
-  margin-top: 135px !important; 
- } 
-
- /* Layout móvil: dos columnas */ 
  .odc-agenda-inner { 
   flex-direction: row !important; 
   flex-wrap: wrap; 
+  justify-content: space-between; 
+  align-items: flex-start; 
   gap: 10px; 
+  padding: 10px; 
  } 
-
  .odc-left { 
   width: 42% !important; 
   flex-direction: column; 
   gap: 10px; 
  } 
-
  .odc-right { 
-  width: 58% !important; 
+  width: 56% !important; 
+  padding: 10px; 
  } 
-
- /* Mini calendario compactado */ 
- .odc-mini-calendar-card { 
-  padding: 2px !important; 
+ .odc-mini-calendar-card, .odc-filters-card { 
+  padding: 10px; 
  } 
-
- /* Filtros compactados */ 
- .odc-filters-card { 
-  padding: 2px !important; 
+ .odc-header-bar { 
+  margin-top: 0; 
+ } 
+ .odc-topbar-blue, .odc-topbar-green { 
+  position: relative; 
+  z-index: 10; 
  } 
 } 
 
-/* ✅ Ajuste extra para pantallas muy pequeñas */ 
-@media (max-width: 450px) { 
- .odc-left { 
+@media (max-width: 480px) { 
+ .odc-left, .odc-right { 
   width: 100% !important; 
-  flex-direction: row; 
  } 
- .odc-mini-calendar-card, .odc-filters-card { 
-  flex: 1; 
+ .odc-agenda-inner { 
+  flex-direction: column !important; 
  } 
- .odc-right { 
-  width: 100% !important; 
+ .odc-agenda-root { 
+  margin-top: 140px !important; 
  } 
 }
