@@ -1,250 +1,363 @@
-/* ================================
-   ESTILO GENERAL - ORDENES DE CITA
-   ================================ */
-.ordenes-de-cita-container {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  width: 100%;
-  max-width: 1300px;
-  margin: 0 auto;
-  padding: 20px;
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
-  color: #333;
+/* ===============================
+   AGENDA - Versión profesional final
+   =============================== */
+
+:root {
+  --primary: #2b6cb0;
+  --primary-light: #e6f0ff;
+  --primary-dark: #1e4a8a;
+  --green: #38a169;
+  --gray-bg: #f5f7fb;
+  --white: #fff;
+  --border: #dce0e8;
+  --shadow: rgba(0, 0, 0, 0.08);
 }
 
-/* -------------------
-   CABECERA / TITULO
-   ------------------- */
-.odc-header {
+/* Fondo general */
+.odc-agenda-root {
+  display: flex;
+  justify-content: center;
+  padding: 35px;
+  background: var(--gray-bg);
+  min-height: calc(100vh - 120px);
+  box-sizing: border-box;
+}
+
+.odc-agenda-inner {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 30px;
+  width: 100%;
+  max-width: 1450px;
+}
+
+/* ===============================
+   PANEL IZQUIERDO
+   =============================== */
+.odc-left {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Tarjetas: calendario y filtros */
+.odc-mini-calendar-card,
+.odc-filters-card {
+  background: var(--white);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 4px 12px var(--shadow);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.odc-mini-calendar-card:hover,
+.odc-filters-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Mini calendario */
+.mini-cal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-}
-
-.odc-header h2 {
-  font-size: 1.6rem;
   font-weight: 600;
-  margin: 0;
-  color: #222;
+  margin-bottom: 12px;
+  color: var(--primary-dark);
 }
 
-/* -------------------
-   CONTENIDO PRINCIPAL
-   ------------------- */
-.odc-content {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
+.cal-arrow {
+  border: none;
+  background: var(--primary);
+  color: white;
+  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-/* ===================================
-   SECCIÓN IZQUIERDA (CALENDARIO + FILTROS)
-   =================================== */
-.odc-left {
-  display: flex;
-  flex-direction: row; /* 🔹 calendario y filtros lado a lado */
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
-  flex-wrap: wrap; /* 🔹 se adapta en pantallas pequeñas */
+.cal-arrow:hover {
+  background: var(--primary-dark);
+}
+
+.mini-month-table {
   width: 100%;
-  box-sizing: border-box;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 0.9rem;
 }
 
-/* Tarjeta de calendario */
-.odc-mini-calendar-card {
-  flex: 1;
-  min-width: 280px;
-  background-color: #fff;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
-  box-sizing: border-box;
-  transition: transform 0.2s ease;
+.mini-month-table th {
+  color: var(--primary-dark);
+  font-weight: 600;
+  padding-bottom: 6px;
 }
 
-.odc-mini-calendar-card:hover {
-  transform: scale(1.01);
+.mini-month-table td {
+  padding: 6px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-/* Tarjeta de filtros */
-.odc-filters-card {
-  flex: 1;
-  min-width: 240px;
-  background-color: #fff;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
-  box-sizing: border-box;
-  transition: transform 0.2s ease;
+.mini-month-table td:hover {
+  background: var(--primary-light);
 }
 
-.odc-filters-card:hover {
-  transform: scale(1.01);
-}
-
-/* Etiquetas y selects */
+/* Filtros */
 .odc-filters-card label {
   display: block;
-  font-weight: 500;
-  margin-bottom: 8px;
+  font-weight: 600;
+  margin-bottom: 4px;
   color: #333;
 }
 
 .odc-filters-card select {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  margin-bottom: 15px;
-  transition: all 0.2s ease;
+  padding: 9px 11px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  margin-bottom: 12px;
+  background: #fff;
+  transition: 0.2s;
 }
 
 .odc-filters-card select:focus {
-  border-color: #2b6cb0;
-  box-shadow: 0 0 5px rgba(43, 108, 176, 0.3);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1);
+  outline: none;
 }
 
-/* ===================================
-   SECCIÓN DERECHA (LISTADO DE CITAS)
-   =================================== */
+/* ===============================
+   PANEL DERECHO
+   =============================== */
 .odc-right {
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
 
-.odc-appointments {
-  background-color: #fff;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
-  box-sizing: border-box;
+/* Barra superior */
+.odc-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--white);
+  border-radius: 14px;
+  padding: 15px 20px;
+  box-shadow: 0 4px 12px var(--shadow);
+  border: 1px solid var(--border);
+}
+
+/* Título */
+.odc-title {
+  color: var(--primary-dark);
+  margin-right: 20px;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* Botones de vista */
+.view-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn.view {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.btn.view.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.btn.view:hover {
+  background: var(--primary-light);
+}
+
+/* Navegación de fecha */
+.date-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.date-nav .btn.icon {
+  background: var(--primary);
+  color: white;
+  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.date-nav .btn.icon:hover {
+  background: var(--primary-dark);
+}
+
+#currentDateDisplay {
+  font-weight: 600;
+  color: var(--primary-dark);
+  font-size: 0.95rem;
+}
+
+/* Acciones de la derecha */
+.right-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-input {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  min-width: 180px;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1);
+  outline: none;
+}
+
+.btn.green {
+  background: var(--green);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 0.9rem;
+}
+
+.btn.green:hover {
+  background: #2f855a;
+}
+
+/* ===============================
+   CONTENIDO PRINCIPAL
+   =============================== */
+.odc-content-card {
+  background: var(--white);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px var(--shadow);
+  border: 1px solid var(--border);
+  padding: 18px;
+}
+
+.tools-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tools-right {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn.blue {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 6px;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: 0.2s;
+}
+
+.btn.blue:hover {
+  background: var(--primary-dark);
 }
 
 /* Tabla de citas */
-.odc-table {
+.table-wrap {
+  overflow-x: auto;
+}
+
+.appointments-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.odc-table th {
+.appointments-table th,
+.appointments-table td {
+  border-bottom: 1px solid var(--border);
   text-align: left;
-  background-color: #f7f8fa;
-  color: #333;
-  font-weight: 600;
-  padding: 12px;
-  border-bottom: 2px solid #eaeaea;
-}
-
-.odc-table td {
-  padding: 12px;
-  border-bottom: 1px solid #eee;
-  color: #444;
+  padding: 10px 8px;
   font-size: 0.95rem;
+  color: #333;
 }
 
-.odc-table tr:hover {
-  background-color: #f9f9f9;
-}
-
-/* Estado de cita */
-.odc-status {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 8px;
+.appointments-table th {
+  background: var(--primary-light);
+  color: var(--primary-dark);
   font-weight: 600;
-  font-size: 0.85rem;
-  text-transform: capitalize;
 }
 
-.odc-status.activa {
-  background-color: #e0f7e9;
-  color: #208a3e;
+.no-data {
+  text-align: center;
+  color: #888;
+  padding: 20px 0;
 }
 
-.odc-status.cancelada {
-  background-color: #ffecec;
-  color: #c0392b;
+/* ===============================
+   RESPONSIVE
+   =============================== */
+@media (max-width: 1100px) {
+  .odc-agenda-inner {
+    grid-template-columns: 260px 1fr;
+    gap: 20px;
+  }
 }
 
-.odc-status.pendiente {
-  background-color: #fff6e0;
-  color: #b8860b;
-}
-
-/* ===================================
-   BOTONES Y ACCIONES
-   =================================== */
-.odc-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.odc-btn {
-  background-color: #2b6cb0;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-.odc-btn:hover {
-  background-color: #255a90;
-  transform: translateY(-1px);
-}
-
-/* Botón secundario */
-.odc-btn.secondary {
-  background-color: #718096;
-}
-
-.odc-btn.secondary:hover {
-  background-color: #4a5568;
-}
-
-/* ===================================
-   RESPONSIVE DESIGN
-   =================================== */
-@media (max-width: 992px) {
+@media (max-width: 900px) {
+  .odc-agenda-inner {
+    grid-template-columns: 1fr;
+  }
   .odc-left {
-    flex-direction: column; /* 🔹 apila calendario y filtros */
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 15px;
   }
-
-  .odc-header h2 {
-    font-size: 1.4rem;
-  }
-
-  .odc-btn {
-    font-size: 0.85rem;
-    padding: 7px 14px;
+  .odc-mini-calendar-card,
+  .odc-filters-card {
+    flex: 1;
   }
 }
 
 @media (max-width: 600px) {
-  .ordenes-de-cita-container {
-    padding: 15px;
+  .odc-agenda-root {
+    padding: 20px;
   }
-
-  .odc-mini-calendar-card,
-  .odc-filters-card {
-    min-width: 100%;
-  }
-
-  .odc-table th,
-  .odc-table td {
-    padding: 10px;
-  }
-
-  .odc-btn {
+  .btn.green,
+  .btn.blue,
+  .btn.view {
     width: 100%;
-    text-align: center;
+  }
+  .right-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
