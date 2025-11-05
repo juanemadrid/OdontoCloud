@@ -1,359 +1,417 @@
-<!-- ===============================
-     AGENDA - VERSIÓN PROFESIONAL
-     =============================== -->
-
-<div class="odc-agenda-root">
-  <!-- Franja superior -->
-  <div class="odc-header-section">
-    <h2>Agenda</h2>
-  </div>
-
-  <!-- Contenedor general -->
-  <div class="odc-agenda-container">
-    <div class="odc-agenda-content">
-      <!-- Fila superior: vista y controles -->
-      <div class="odc-toolbar">
-        <div class="toolbar-left">
-          <button class="btn-view active">Día</button>
-          <button class="btn-view">Semana</button>
-          <button class="btn-view">Detalle</button>
-        </div>
-
-        <div class="toolbar-center">
-          <button class="btn-icon" title="Anterior">&#8249;</button>
-          <span class="current-date">5 de noviembre de 2025</span>
-          <button class="btn-icon" title="Siguiente">&#8250;</button>
-          <button class="btn-today">Hoy</button>
-        </div>
-
-        <div class="toolbar-right">
-          <button class="btn-new">+ Nueva cita</button>
-        </div>
-      </div>
-
-      <!-- Fila de filtros -->
-      <div class="odc-filters">
-        <div>
-          <label>Sucursal</label>
-          <select>
-            <option>— Todas —</option>
-          </select>
-        </div>
-        <div>
-          <label>Doctores</label>
-          <select>
-            <option>— Todos —</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Mini calendario -->
-      <div class="odc-mini-calendar">
-        <div class="calendar-header">
-          <button class="btn-icon">&#8249;</button>
-          <span class="month-label">noviembre de 2025</span>
-          <button class="btn-icon">&#8250;</button>
-        </div>
-        <table class="calendar-table">
-          <thead>
-            <tr>
-              <th>Lu</th><th>Ma</th><th>Mi</th><th>Ju</th><th>Vi</th><th>Sa</th><th>Do</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td></tr>
-            <tr><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Tabla de citas -->
-      <div class="odc-table-section">
-        <div class="tools">
-          <div class="tools-left">
-            <strong>Ocupación:</strong> 0 / 18 (0%)
-          </div>
-          <div class="tools-right">
-            <button class="btn blue">Imprimir</button>
-            <button class="btn green">Confirmar</button>
-            <button class="btn blue">Exportar</button>
-          </div>
-        </div>
-
-        <div class="table-wrap">
-          <table class="appointments-table">
-            <thead>
-              <tr>
-                <th>Hora</th>
-                <th>Paciente</th>
-                <th>Doctor</th>
-                <th>Espacio físico</th>
-                <th>Comentario</th>
-                <th>Estado</th>
-                <th>Recordatorio</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colspan="7" class="no-data">No hay citas registradas para esta fecha.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ===============================
-     CSS - ESTILO PROFESIONAL
-     =============================== -->
-<style>
+/* ======================================================
+   🌟 AGENDA RESPONSIVE COMPLETA (Versión Profesional)
+   ====================================================== */
 :root {
-  --primary: #007bff;
-  --primary-dark: #0056b3;
-  --primary-light: #e8f1ff;
-  --green: #38a169;
-  --gray-bg: #f5f7fb;
-  --border: #dce0e8;
-  --white: #fff;
-  --shadow: rgba(0,0,0,0.08);
+  --primary: #2b6cb0;
+  --primary-light: #e6f0ff;
+  --primary-dark: #1e4e8c;
+  --accent-green: #38a169;
+  --bg-light: #dfe2e6;
+  --bg-panel: #f1f3f6;
+  --border: #d0d6dc;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --radius: 10px;
+  --shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+  --transition: all 0.2s ease-in-out;
 }
 
-/* Fondo general */
+/* ----------- ROOT LAYOUT ----------- */
 .odc-agenda-root {
-  background: var(--gray-bg);
-  padding: 30px;
-  min-height: calc(100vh - 120px);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  background: var(--bg-light);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  color: var(--text);
+  box-sizing: border-box;
+  margin-top: 25px;
+  position: relative;
+  z-index: 1;
 }
 
-/* Franja superior */
-.odc-header-section {
-  background: var(--primary-dark);
-  color: white;
-  padding: 12px 20px;
-  border-radius: 8px 8px 0 0;
-  font-weight: 600;
-  font-size: 1.2rem;
-  margin-bottom: 0;
-  box-shadow: 0 3px 6px var(--shadow);
-}
-
-/* Contenedor principal */
-.odc-agenda-container {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 3px 10px var(--shadow);
+.odc-agenda-inner {
+  display: flex;
+  flex: 1;
+  max-width: 1400px;
   padding: 20px;
+  gap: 20px;
+  box-sizing: border-box;
 }
 
-/* Contenido interno */
-.odc-agenda-content {
+/* ----------- LEFT PANEL ----------- */
+.odc-left {
+  width: 280px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+  box-sizing: border-box;
 }
 
-/* Toolbar superior */
-.odc-toolbar {
+.odc-mini-calendar-card,
+.odc-filters-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* ----------- MINI CALENDARIO ----------- */
+.mini-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  color: var(--primary-dark);
+  margin-bottom: 10px;
+}
+
+.cal-arrow {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--primary-dark);
+  transition: var(--transition);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.cal-arrow:hover {
+  transform: scale(1.15);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.mini-month-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.mini-month-table thead th {
+  padding-bottom: 6px;
+  color: var(--primary-dark);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.mini-month-table td {
+  padding: 8px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  vertical-align: middle;
+}
+
+.mini-month-table td.empty {
+  background: transparent;
+  cursor: default;
+}
+
+.mini-month-table td.today {
+  box-shadow: inset 0 0 0 1px rgba(43, 108, 176, 0.15);
+  font-weight: 600;
+}
+
+.mini-month-table td.selected {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ----------- FILTROS ----------- */
+.odc-filters-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.odc-filters-card label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.odc-filters-card select {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: var(--transition);
+}
+
+.odc-filters-card select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.06);
+}
+
+/* ----------- RIGHT PANEL ----------- */
+.odc-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  border: 1px solid var(--border);
+  transition: var(--transition);
+  position: relative;
+}
+
+.odc-right:hover {
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.25);
+}
+
+/* ----------- HEADER BAR ----------- */
+.odc-header-bar {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
+  padding: 12px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
+  box-sizing: border-box;
 }
 
-.toolbar-left {
+.odc-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.odc-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin: 0;
+}
+
+.view-buttons {
   display: flex;
   gap: 6px;
 }
 
-.btn-view {
-  padding: 6px 12px;
-  border: 1px solid var(--border);
+.view-buttons .btn.view {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  border: none;
+  padding: 6px 10px;
   border-radius: 6px;
-  background: #f8f9fa;
   cursor: pointer;
-  transition: all 0.2s ease;
-  color: #333;
-  font-weight: 500;
+  font-weight: 600;
+  transition: var(--transition);
 }
 
-.btn-view.active {
-  background: var(--primary);
+.view-buttons .btn.view.active {
+  background: var(--primary-dark);
   color: #fff;
-  border-color: var(--primary);
 }
 
-.btn-icon {
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.btn-today {
-  background: var(--green);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.btn-new {
-  background: var(--green);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-/* Filtros */
-.odc-filters {
+/* ----------- HEADER RIGHT ----------- */
+.odc-header-right {
   display: flex;
-  gap: 20px;
+  align-items: center;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
-.odc-filters label {
-  font-weight: 600;
-  display: block;
-  margin-bottom: 4px;
-  color: #333;
-}
-
-.odc-filters select {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-}
-
-/* Mini calendario */
-.odc-mini-calendar {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 15px;
-  background: var(--white);
-  box-shadow: 0 2px 6px var(--shadow);
-  width: 280px;
-}
-
-.calendar-header {
+.date-nav {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-weight: 600;
-  color: var(--primary-dark);
-  margin-bottom: 10px;
+  gap: 6px;
 }
 
-.calendar-table {
-  width: 100%;
-  border-collapse: collapse;
+.current-date {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 14px;
+  min-width: 160px;
   text-align: center;
-  font-size: 0.9rem;
 }
 
-.calendar-table th {
-  color: var(--primary-dark);
-  font-weight: 600;
-  padding-bottom: 5px;
-}
-
-.calendar-table td {
-  padding: 6px 0;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.calendar-table td:hover {
+.btn.icon {
   background: var(--primary-light);
-}
-
-/* Tabla de citas */
-.odc-table-section {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 15px;
-  background: var(--white);
-  box-shadow: 0 2px 8px var(--shadow);
-}
-
-.tools {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.tools-right {
-  display: flex;
-  gap: 8px;
-}
-
-.btn {
-  cursor: pointer;
+  border: none;
+  color: var(--primary-dark);
+  padding: 5px 9px;
   border-radius: 6px;
-  padding: 6px 12px;
-  font-weight: 500;
+  cursor: pointer;
+  font-size: 16px;
+  transition: var(--transition);
 }
 
-.btn.blue {
+.btn.icon:hover {
   background: var(--primary);
   color: #fff;
-  border: none;
+}
+
+/* ----------- ACCIONES ----------- */
+.right-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
+.search-input {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 14px;
+  min-width: 180px;
+  transition: var(--transition);
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.06);
 }
 
 .btn.green {
-  background: var(--green);
+  background: var(--accent-green);
   color: #fff;
   border: none;
+  transition: var(--transition);
 }
 
+.btn.green:hover {
+  background: #2f855a;
+}
+
+/* ----------- TABLE ----------- */
 .table-wrap {
-  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 280px);
+  padding: 12px;
+  box-sizing: border-box;
 }
 
 .appointments-table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 14px;
+  min-width: 720px;
 }
 
-.appointments-table th, .appointments-table td {
-  padding: 10px 8px;
-  border-bottom: 1px solid var(--border);
-  text-align: left;
-}
-
-.appointments-table th {
+.appointments-table thead th {
   background: var(--primary-light);
   color: var(--primary-dark);
   font-weight: 600;
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
 }
 
-.no-data {
-  text-align: center;
-  color: #888;
-  padding: 20px 0;
+.appointments-table tbody td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .odc-filters {
+.appointments-table tr:hover td {
+  background: var(--primary-light);
+}
+
+/* ----------- RESPONSIVE ----------- */
+@media (max-width: 1024px) {
+  .odc-agenda-inner {
     flex-direction: column;
   }
-  .odc-mini-calendar {
+
+  .odc-left {
+    width: 100%;
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .odc-filters-card,
+  .odc-mini-calendar-card {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .odc-agenda-inner {
+    flex-direction: column;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .odc-left {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .odc-header-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .odc-header-left,
+  .odc-header-right {
+    flex-direction: column;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .right-actions {
+    justify-content: center;
+  }
+
+  .search-input,
+  #btnNuevaCita {
+    width: 100%;
+  }
+
+  .appointments-table {
+    min-width: 100%;
+    font-size: 13px;
+  }
+
+  .table-wrap {
+    max-height: none;
+    overflow-x: auto;
+  }
+
+  .tools-right {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .tools-right .btn {
     width: 100%;
   }
 }
-</style>
+
+@media (max-width: 480px) {
+  .odc-title {
+    font-size: 16px;
+  }
+
+  .btn,
+  .search-input {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+
+  .odc-filters-card label {
+    font-size: 12px;
+  }
+
+  .appointments-table th,
+  .appointments-table td {
+    padding: 8px 6px;
+  }
+}
