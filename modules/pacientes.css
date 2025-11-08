@@ -1,5 +1,5 @@
 /* =========================================================
-   ESTILOS PACIENTES — versión PRO+ (OdontoCloud) RESPONSIVE
+   ESTILOS PACIENTES — versión PRO (OdontoCloud) RESPONSIVE
    ========================================================= */
 
 /* ---------- ESTRUCTURA BASE ---------- */
@@ -12,7 +12,7 @@
   z-index: 1;
   background: #f5f8fb;
   font-family: 'Inter', system-ui, sans-serif;
-  margin-top: -20px; /* Ajuste superior */
+  margin-top: 70px !important; /* 🔧 FIX: se bajó para que no quede debajo del menú azul */
 }
 
 /* ---------- TOPBARS ---------- */
@@ -66,11 +66,17 @@
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s ease;
+  font-family: inherit;
 }
 .odc-btn:hover { opacity: 0.85; }
 
 .odc-btn-blue { background-color: #1976d2; color: white; }
-.odc-btn-green { background-color: #43a047; color: white; }
+.odc-btn-green { 
+  background-color: #43a047; 
+  color: white; 
+  white-space: nowrap; /* 🔧 FIX: evita que se divida en dos líneas */
+  padding: 0.5rem 1rem; /* 🔧 FIX: mejora el espaciado horizontal */
+}
 .odc-btn-inactive { background-color: #757575; color: white; }
 .odc-btn-save { background-color: #2e7d32; color: white; }
 .odc-btn-cancel { background-color: #b71c1c; color: white; }
@@ -83,7 +89,7 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   padding: 1.2rem 1.4rem;
   transition: all 0.2s ease;
-  overflow-x: auto; /* ✅ Scroll horizontal móvil */
+  overflow-x: auto; /* ✅ scroll horizontal en móviles */
 }
 
 .odc-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
@@ -92,7 +98,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
-  min-width: 600px; /* ✅ Evita deformación en móvil */
+  min-width: 600px; /* ✅ evita deformación */
 }
 
 .odc-table th {
@@ -198,7 +204,9 @@
   background: #f9fdfb;
 }
 
-.foto-preview-container { margin-top: 10px; }
+.foto-preview-container {
+  margin-top: 10px;
+}
 .foto-preview {
   max-width: 150px;
   height: auto;
@@ -239,8 +247,15 @@
   background: #fff;
   transition: border-color 0.2s;
 }
-.form-input:focus { border-color: #1abc9c; outline: none; }
-textarea.form-input { resize: vertical; }
+
+.form-input:focus {
+  border-color: #1abc9c;
+  outline: none;
+}
+
+textarea.form-input {
+  resize: vertical;
+}
 
 /* ---------- BOTONES MODAL ---------- */
 .odc-modal-footer {
@@ -315,47 +330,4 @@ textarea.form-input { resize: vertical; }
   }
   .odc-table th, .odc-table td { padding: 8px 6px; }
   .odc-topbar-blue { font-size: 16px; padding: 10px 18px; }
-}
-
-/* ======================================================
-   🔧 OPTIMIZACIONES MÓVILES ADICIONALES (PRO+)
-====================================================== */
-@media (max-width: 768px) {
-  .odc-modal-dialog {
-    max-height: 100vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .form-section-title {
-    margin-top: 18px;
-    font-size: 16px;
-  }
-  .form-input, select.form-input {
-    min-height: 42px;
-  }
-  .form-grid input[type="checkbox"] {
-    transform: scale(1.3);
-    margin-top: 6px;
-  }
-  .odc-modal-body {
-    padding-bottom: 5rem;
-  }
-  .odc-modal-footer {
-    position: sticky;
-    bottom: 0;
-    background: #f2f2f2;
-    z-index: 10;
-    border-top: 2px solid #ddd;
-    padding: 1rem;
-  }
-  .btn-principal,
-  .btn-secundario {
-    font-size: 15px;
-    padding: 12px;
-  }
-  .odc-modal-header {
-    position: sticky;
-    top: 0;
-    z-index: 15;
-  }
 }
