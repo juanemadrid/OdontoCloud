@@ -630,69 +630,90 @@ if (btnNuevaCita) btnNuevaCita.addEventListener("click", () => {
 
   box.querySelector("#btnCancelarModal").addEventListener("click", () => modal.remove());
 
-  // 💾 Guardar cita
-  const form = box.querySelector("#formNuevaCita");
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const esNuevo = chkNuevo.checked;
-    const nombrePaciente = esNuevo ? `${form.querySelector("#npNombre").value.trim()} ${form.querySelector("#npApellido").value.trim()}`.trim() : form.querySelector("#buscarPaciente").value.trim();
-    if (!nombrePaciente) {
-      alert("Por favor ingresa o selecciona un paciente.");
-      return;
+  // 💾 Guardar cita (versión optimizada con pacienteId)
+const form = box.querySelector("#formNuevaCita");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const esNuevo = chkNuevo.checked;
+  const nombrePaciente = esNuevo
+    ? `${form.querySelector("#npNombre").value.trim()} ${form.querySelector("#npApellido").value.trim()}`.trim()
+    : form.querySelector("#buscarPaciente").value.trim();
+
+  if (!nombrePaciente) {
+    alert("⚠️ Por favor, ingresa o selecciona un paciente.");
+    return;
+  }
+
+  try {
+    // ✅ Ya tienes estas funciones importadas al inicio del archivo, así que no es necesario reimportarlas.
+    // const { addDoc, collection, doc, setDoc, getDoc, query, where, getDocs } = ...
+
+    let pacienteId = null;
+
+    // 🔹 Si es paciente nuevo
+    if (esNuevo) {
+      pacienteId = form.querySelector("#npDocumento").value.trim() || nombrePaciente.toLowerCase().replace(/\s+/g, "_");
+      const pacienteRef = doc(db, "pacientes", pacienteId);
+      const pacienteSnap = await getDoc(pacienteRef);
+
+      // 🔸 Solo crea el documento si no existe ya
+      if (!pacienteSnap.exists()) {
+        const pacienteData = {
+          nombre: form.querySelector("#npNombre").value.trim(),
+          apellido: form.querySelector("#npApellido").value.trim(),
+          tipoDocumento: form.querySelector("#npTipoDocumento").value,
+          documento: form.querySelector("#npDocumento").value.trim(),
+          correo: form.querySelector("#npCorreo").value.trim(),
+          indicativo: form.querySelector("#npIndicativo").value,
+          celular: form.querySelector("#npCelular").value.trim(),
+          telefono: form.querySelector("#npTelefono").value.trim(),
+          nacimiento: form.querySelector("#npNacimiento").value,
+          sexo: form.querySelector("#npSexo").value,
+          comentario: form.querySelector("#npComentario").value.trim(),
+          creado: new Date().toISOString(),
+          activo: true
+        };
+        await setDoc(pacienteRef, pacienteData);
+      }
+    } else {
+      // 🔹 Buscar paciente existente por nombre o documento
+      const nombreBuscar = nombrePaciente.toLowerCase();
+      const q = query(collection(db, "pacientes"), where("nombre", "==", nombreBuscar));
+      const snap = await getDocs(q);
+
+      if (!snap.empty) {
+        pacienteId = snap.docs[0].id;
+      } else {
+        console.warn("No se encontró el paciente, se guardará sin ID asociado.");
+      }
     }
+
+    // 🔹 Crear cita con vínculo al paciente
     const nuevaCita = {
       paciente: nombrePaciente,
+      pacienteId: pacienteId || null,
       doctor: form.querySelector("#ncDoctor").value.trim(),
       fecha: form.querySelector("#ncFecha").value,
       horaInicio: form.querySelector("#ncHora").value,
       espacio: form.querySelector("#ncEspacio").value.trim(),
       comentario: form.querySelector("#ncComentario").value.trim(),
-      estado: form.querySelector("#ncEstado") ? form.querySelector("#ncEstado").value : undefined,
+      estado: "En espera",
       creado: new Date().toISOString(),
     };
-    try {
-      // ✅ Usar la instancia de Firestore ya inicializada (no volver a importar)
-      // "db" debe venir desde initAgendaCalendar(db, auth)
-      // o desde window.db si la defines globalmente en app.js
-      const { addDoc, collection, doc, setDoc, getDoc } = await import(
-        "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"
-      );
 
-      // ✅ Guardar la cita en Firestore
-      await addDoc(collection(db || window.db, "citas"), nuevaCita);
+    await addDoc(collection(db, "citas"), nuevaCita);
 
-      // Si es paciente nuevo → guardarlo también
-      if (esNuevo) {
-        const pacienteId = nombrePaciente.toLowerCase().replace(/\s+/g, "_");
-        const pacienteRef = doc(db || window.db, "pacientes", pacienteId);
-        const pacienteSnap = await getDoc(pacienteRef);
-        if (!pacienteSnap.exists()) {
-          const pacienteData = {
-            nombre: form.querySelector("#npNombre").value.trim(),
-            apellido: form.querySelector("#npApellido").value.trim(),
-            tipoDocumento: form.querySelector("#npTipoDocumento").value,
-            documento: form.querySelector("#npDocumento").value.trim(),
-            correo: form.querySelector("#npCorreo").value.trim(),
-            indicativo: form.querySelector("#npIndicativo").value,
-            celular: form.querySelector("#npCelular").value.trim(),
-            telefono: form.querySelector("#npTelefono").value.trim(),
-            nacimiento: form.querySelector("#npNacimiento").value,
-            sexo: form.querySelector("#npSexo").value,
-            comentario: form.querySelector("#npComentario").value.trim(),
-            creado: new Date().toISOString(),
-          };
-          await setDoc(pacienteRef, pacienteData);
-        }
-      }
+    alert("✅ Cita registrada correctamente.");
+    modal.remove();
+    loadCitas(); // 🔁 Recarga las citas sin recargar la página
+  } catch (err) {
+    console.error("❌ Error al guardar cita:", err);
+    alert("❌ Error al guardar la cita. Revisa la consola para más detalles.");
+  }
+});
 
-      alert("✅ Cita registrada correctamente.");
-      modal.remove();
-      loadCitas(); // recarga la tabla
-    } catch (err) {
-      console.error("Error al guardar cita:", err);
-      alert("❌ Error al guardar la cita. Revisa la consola para más detalles.");
-    }
-  });
 });
 
 
