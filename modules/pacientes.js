@@ -241,12 +241,103 @@ async function eliminarPaciente(id) {
 }
 
 // ===================================================
-// 🔹 VER HISTORIAL DE PACIENTE
+// 🔹 VER HISTORIAL DE PACIENTE (CITAS)
 // ===================================================
 async function verHistorialPaciente(id) {
   const p = pacientes.find(p => p.id === id);
   if (!p) return alert("Paciente no encontrado.");
 
-  // Aquí podrías abrir un modal de historial o cargar una vista aparte
-  alert(`Historial de ${p.nombreCompleto}\nDocumento: ${p.nroDocumento}\nDoctor: ${p.doctor || "No asignado"}`);
+  const nombrePaciente = p.nombreCompleto || `${p.nombres || ""} ${p.apellidos || ""}`.trim();
+  if (!nombrePaciente) return alert("El paciente no tiene nombre registrado.");
+
+  try {
+    // Consulta a Firestore
+    const snapshot = await window.db.collection("citas")
+      .where("paciente", "==", nombrePaciente)
+      .orderBy("fecha", "desc")
+      .get();
+
+    if (snapshot.empty) {
+      alert(`No hay citas registradas para ${nombrePaciente}.`);
+      return;
+    }
+
+    // Construir contenido del historial
+    let historialHTML = `
+      <div class="odc-historial">
+        <h3>Historial de ${nombrePaciente}</h3>
+        <table class="odc-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Doctor</th>
+              <th>Estado</th>
+              <th>Comentario</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    snapshot.docs.forEach(doc => {
+      const c = doc.data();
+      historialHTML += `
+        <tr>
+          <td>${c.fecha || "-"}</td>
+          <td>${c.horaInicio || "-"}</td>
+          <td>${c.doctor || "-"}</td>
+          <td>${c.estado || "-"}</td>
+          <td>${c.comentario || ""}</td>
+        </tr>
+      `;
+    });
+
+    historialHTML += `
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    mostrarHistorialModal(historialHTML);
+  } catch (error) {
+    console.error("Error cargando historial:", error);
+    alert("Error al cargar el historial del paciente.");
+  }
+}
+
+// ===================================================
+// 🔹 MODAL PARA MOSTRAR HISTORIAL
+// ===================================================
+function mostrarHistorialModal(html) {
+  // Crear el modal si no existe
+  let modalHist = document.getElementById("modalHistorial");
+  if (!modalHist) {
+    modalHist = document.createElement("div");
+    modalHist.id = "modalHistorial";
+    modalHist.className = "odc-modal";
+    modalHist.innerHTML = `
+      <div class="odc-modal-backdrop"></div>
+      <div class="odc-modal-dialog">
+        <div class="odc-modal-header">
+          <h3>Historial del paciente</h3>
+          <button class="odc-modal-close" id="btnCerrarHistorial">&times;</button>
+        </div>
+        <div class="odc-modal-body" id="contenidoHistorial"></div>
+      </div>
+    `;
+    document.body.appendChild(modalHist);
+  }
+
+  // Insertar contenido y mostrar
+  document.getElementById("contenidoHistorial").innerHTML = html;
+  modalHist.style.display = "block";
+
+  // Cerrar modal
+  document.getElementById("btnCerrarHistorial").onclick = () => {
+    modalHist.style.display = "none";
+  };
+
+  modalHist.querySelector(".odc-modal-backdrop").onclick = () => {
+    modalHist.style.display = "none";
+  };
 }
