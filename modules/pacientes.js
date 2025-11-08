@@ -1,214 +1,199 @@
-// ===============================
-// pacientes.js - Gestión de pacientes
-// ===============================
+// modules/pacientes.js
+export function initPacientes(db, auth) {
+  console.log("🔥 Módulo pacientes iniciado");
 
-// Asegúrate de que 'db' esté disponible desde app.js
-// import { db } from './app.js'; // si usas módulos
+  // ======== ELEMENTOS =========
+  const tablaPacientes = document.getElementById("tablaPacientes");
+  const resultCount = document.getElementById("resultCount");
+  const btnNuevoPaciente = document.getElementById("btnNuevoPaciente");
+  const modalPaciente = document.getElementById("modalPaciente");
+  const btnCerrarModal = document.getElementById("btnCerrarModal");
+  const modalCancel = document.getElementById("modalCancel");
+  const formPaciente = document.getElementById("formPaciente");
+  const btnInactivos = document.getElementById("btnInactivos");
+  const buscarPaciente = document.getElementById("buscarPaciente");
+  const btnBuscar = document.getElementById("btnBuscar");
+  const btnFiltroDoctor = document.getElementById("btnFiltroDoctor");
+  const doctorDropdown = document.getElementById("doctorDropdown");
+  const doctorList = document.getElementById("doctorList");
+  const inputFoto = document.getElementById("inputFoto");
+  const fotoPreview = document.getElementById("fotoPreview");
 
-const tablaPacientes = document.getElementById("tablaPacientes");
-const btnNuevoPaciente = document.getElementById("btnNuevoPaciente");
-const modalPaciente = document.getElementById("modalPaciente");
-const btnCerrarModal = document.getElementById("btnCerrarModal");
-const btnCancelarModal = document.getElementById("modalCancel");
-const formPaciente = document.getElementById("formPaciente");
-const buscarInput = document.getElementById("buscarPaciente");
-const btnBuscar = document.getElementById("btnBuscar");
-const btnInactivos = document.getElementById("btnInactivos");
-const doctorInput = document.getElementById("doctor");
-const resultCount = document.getElementById("resultCount");
+  let pacientesData = [];
+  let mostrarInactivos = false;
+  let filtroDoctor = "__all";
 
-let mostrandoInactivos = false;
-
-// ===============================
-// Abrir/Cerrar Modal
-// ===============================
-btnNuevoPaciente.addEventListener("click", () => {
-  modalPaciente.style.display = "block";
-});
-
-btnCerrarModal.addEventListener("click", () => {
-  modalPaciente.style.display = "none";
-  formPaciente.reset();
-});
-
-btnCancelarModal.addEventListener("click", () => {
-  modalPaciente.style.display = "none";
-  formPaciente.reset();
-});
-
-// ===============================
-// Función para calcular edad
-// ===============================
-function calcularEdad(fechaNacimiento) {
-  const hoy = new Date();
-  const nacimiento = new Date(fechaNacimiento);
-  let edad = hoy.getFullYear() - nacimiento.getFullYear();
-  const m = hoy.getMonth() - nacimiento.getMonth();
-  if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) {
-    edad--;
-  }
-  return edad;
-}
-
-// ===============================
-// Guardar paciente en Firestore
-// ===============================
-formPaciente.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const pacienteData = {
-    tipoDocumento: document.getElementById("tipoDocumento").value,
-    nroDocumento: document.getElementById("nroDocumento").value,
-    nroHistoria: document.getElementById("nroHistoria").value,
-    nombres: document.getElementById("nombres").value,
-    apellidos: document.getElementById("apellidos").value,
-    nombreCompleto: document.getElementById("nombres").value + " " + document.getElementById("apellidos").value,
-    sexo: document.getElementById("sexo").value,
-    estadoCivil: document.getElementById("estadoCivil").value,
-    paisNacimiento: document.getElementById("paisNacimiento").value,
-    ciudadNacimiento: document.getElementById("ciudadNacimiento").value,
-    fechaIngreso: new Date().toISOString(),
-    fechaNacimiento: document.getElementById("fechaNacimiento").value,
-    edad: calcularEdad(document.getElementById("fechaNacimiento").value),
-    paisDomicilio: document.getElementById("paisDomicilio").value,
-    ciudadDomicilio: document.getElementById("ciudadDomicilio").value,
-    barrio: document.getElementById("barrio").value,
-    lugarResidencia: document.getElementById("lugarResidencia").value,
-    estrato: document.getElementById("estrato").value,
-    zonaResidencial: document.getElementById("zonaResidencial").value,
-    esExtranjero: document.getElementById("esExtranjero").checked,
-    permitePublicidad: document.getElementById("permitePublicidad").checked,
-    celular: document.getElementById("celular").value,
-    telDomicilio: document.getElementById("telDomicilio").value,
-    telOficina: document.getElementById("telOficina").value,
-    extension: document.getElementById("extension").value,
-    email: document.getElementById("email").value,
-    ocupacion: document.getElementById("ocupacion").value,
-    nombreResponsable: document.getElementById("nombreResponsable").value,
-    parentesco: document.getElementById("parentesco").value,
-    celularResponsable: document.getElementById("celularResponsable").value,
-    telefonoResponsable: document.getElementById("telefonoResponsable").value,
-    emailResponsable: document.getElementById("emailResponsable").value,
-    nombreAcompanante: document.getElementById("nombreAcompanante").value,
-    telefonoAcompanante: document.getElementById("telefonoAcompanante").value,
-    convenioBeneficio: document.getElementById("convenioBeneficio").value,
-    comoConocio: document.getElementById("comoConocio").value,
-    campania: document.getElementById("campania").value,
-    remitidoPor: document.getElementById("remitidoPor").value,
-    asesorComercial: document.getElementById("asesorComercial").value,
-    tipoVinculacion: document.getElementById("tipoVinculacion").value,
-    nombreEps: document.getElementById("nombreEps").value,
-    polizaSalud: document.getElementById("polizaSalud").value,
-    doctor: document.getElementById("doctor").value,
-    notas: document.getElementById("notas").value,
-    activo: true, // por defecto activo
-    createdAt: new Date(),
+  // ======== FUNCIONES =========
+  const openModal = () => (modalPaciente.style.display = "block");
+  const closeModal = () => {
+    modalPaciente.style.display = "none";
+    formPaciente.reset();
+    fotoPreview.src = "";
+    fotoPreview.style.display = "none";
+    document.getElementById("pacienteId").value = "";
   };
 
-  try {
-    await db.collection("pacientes").add(pacienteData);
-    alert("Paciente guardado correctamente.");
-    formPaciente.reset();
-    modalPaciente.style.display = "none";
-    cargarPacientes();
-  } catch (error) {
-    console.error("Error al guardar paciente:", error);
-    alert("Error al guardar paciente. Ver consola.");
-  }
-});
+  const calcularEdad = (fechaNacimiento) => {
+    if (!fechaNacimiento) return "";
+    const hoy = new Date();
+    const nacimiento = new Date(fechaNacimiento);
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const m = hoy.getMonth() - nacimiento.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) edad--;
+    return edad;
+  };
 
-// ===============================
-// Cargar pacientes desde Firestore
-// ===============================
-async function cargarPacientes() {
-  tablaPacientes.innerHTML = `<tr class="sin-datos"><td colspan="6">Cargando...</td></tr>`;
-
-  try {
-    let queryRef = db.collection("pacientes");
-    queryRef = queryRef.orderBy("nombres", "asc");
-
-    const snapshot = await queryRef.get();
-    let pacientes = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-
-    // Filtrar activos/inactivos
-    pacientes = pacientes.filter((p) => p.activo !== mostrandoInactivos);
-
-    // Filtrar por búsqueda
-    const term = buscarInput.value.trim().toLowerCase();
-    if (term) {
-      pacientes = pacientes.filter(
-        (p) =>
-          p.nombres.toLowerCase().includes(term) ||
-          p.apellidos.toLowerCase().includes(term) ||
-          (p.nroDocumento && p.nroDocumento.includes(term)) ||
-          (p.celular && p.celular.includes(term))
+  const renderTabla = () => {
+    let filtered = pacientesData.filter(p => (mostrarInactivos ? p.estado === "inactivo" : p.estado !== "inactivo"));
+    if (buscarPaciente.value.trim()) {
+      const term = buscarPaciente.value.toLowerCase();
+      filtered = filtered.filter(p =>
+        (p.nombres + " " + p.apellidos).toLowerCase().includes(term) ||
+        (p.nroDocumento || "").toLowerCase().includes(term) ||
+        (p.celular || "").toLowerCase().includes(term)
       );
     }
-
-    // Filtrar por doctor si se ingresó
-    const doctorTerm = doctorInput.value.trim().toLowerCase();
-    if (doctorTerm) {
-      pacientes = pacientes.filter(
-        (p) => p.doctor && p.doctor.toLowerCase().includes(doctorTerm)
-      );
+    if (filtroDoctor !== "__all") {
+      filtered = filtered.filter(p => p.doctor === filtroDoctor);
     }
 
-    if (pacientes.length === 0) {
-      tablaPacientes.innerHTML = `<tr class="sin-datos"><td colspan="6">Sin datos</td></tr>`;
-      resultCount.textContent = "0";
+    resultCount.textContent = filtered.length;
+
+    if (!filtered.length) {
+      tablaPacientes.innerHTML = '<tr class="sin-datos"><td colspan="6">Sin datos</td></tr>';
       return;
     }
 
-    tablaPacientes.innerHTML = "";
-    pacientes.forEach((p) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${p.nombreCompleto || ""}</td>
+    tablaPacientes.innerHTML = filtered
+      .map(p => `
+      <tr>
+        <td>${p.nombres} ${p.apellidos}</td>
         <td>${p.nroDocumento || ""}</td>
-        <td>${p.fechaIngreso ? new Date(p.fechaIngreso).toLocaleDateString() : ""}</td>
+        <td>${p.fechaIngreso || ""}</td>
         <td style="text-align:center">
-          <button class="odc-btn odc-btn-blue btn-toggle" data-id="${p.id}" data-activo="${p.activo}">
-            ${p.activo ? "Inactivar" : "Activar"}
-          </button>
+          <button class="btn-edit" data-id="${p.id}">✏️</button>
+          <button class="btn-toggle" data-id="${p.id}">${p.estado === "activo" ? "🔓" : "🔒"}</button>
         </td>
-      `;
-      tablaPacientes.appendChild(tr);
-    });
+      </tr>
+    `).join("");
 
-    resultCount.textContent = pacientes.length;
-
-    // Agregar eventos a botones Activar/Inactivar
-    document.querySelectorAll(".btn-toggle").forEach((btn) => {
+    // Eventos de botones
+    tablaPacientes.querySelectorAll(".btn-edit").forEach(btn => {
       btn.addEventListener("click", async () => {
-        const pacienteId = btn.dataset.id;
-        const nuevoEstado = btn.dataset.activo === "true" ? false : true;
-        try {
-          await db.collection("pacientes").doc(pacienteId).update({ activo: nuevoEstado });
-          cargarPacientes();
-        } catch (error) {
-          console.error("Error al cambiar estado:", error);
+        const paciente = pacientesData.find(p => p.id === btn.dataset.id);
+        if (!paciente) return;
+        // llenar formulario
+        Object.keys(paciente).forEach(key => {
+          const el = document.getElementById(key);
+          if (el) {
+            if (el.type === "checkbox") el.checked = paciente[key];
+            else el.value = paciente[key];
+          }
+        });
+        if (paciente.fotoURL) {
+          fotoPreview.src = paciente.fotoURL;
+          fotoPreview.style.display = "block";
         }
+        openModal();
       });
     });
-  } catch (error) {
-    console.error("Error al cargar pacientes:", error);
-    tablaPacientes.innerHTML = `<tr class="sin-datos"><td colspan="6">Error al cargar datos</td></tr>`;
-    resultCount.textContent = "0";
-  }
+
+    tablaPacientes.querySelectorAll(".btn-toggle").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const pacienteRef = doc(db, "pacientes", id);
+        const paciente = pacientesData.find(p => p.id === id);
+        const nuevoEstado = paciente.estado === "activo" ? "inactivo" : "activo";
+        await pacienteRef.update({ estado: nuevoEstado });
+        paciente.estado = nuevoEstado;
+        renderTabla();
+      });
+    });
+  };
+
+  const fetchPacientes = async () => {
+    const snapshot = await db.collection("pacientes").get();
+    pacientesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderTabla();
+    renderDoctorDropdown();
+  };
+
+  const renderDoctorDropdown = () => {
+    const doctores = [...new Set(pacientesData.map(p => p.doctor).filter(Boolean))];
+    doctorList.innerHTML = '<button class="odc-dropdown-item" data-doctor="__all">Todos</button>' +
+      doctores.map(d => `<button class="odc-dropdown-item" data-doctor="${d}">${d}</button>`).join("");
+    doctorList.querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        filtroDoctor = btn.dataset.doctor;
+        doctorDropdown.style.display = "none";
+        renderTabla();
+      });
+    });
+  };
+
+  // ======== EVENTOS =========
+  btnNuevoPaciente.addEventListener("click", openModal);
+  btnCerrarModal.addEventListener("click", closeModal);
+  modalCancel.addEventListener("click", closeModal);
+
+  btnInactivos.addEventListener("click", () => {
+    mostrarInactivos = !mostrarInactivos;
+    btnInactivos.textContent = mostrarInactivos ? "Activos" : "Inactivos";
+    renderTabla();
+  });
+
+  btnBuscar.addEventListener("click", renderTabla);
+
+  btnFiltroDoctor.addEventListener("click", () => {
+    doctorDropdown.style.display = doctorDropdown.style.display === "block" ? "none" : "block";
+  });
+
+  // Calcular nombre completo y edad automáticamente
+  formPaciente.addEventListener("input", () => {
+    const nombres = document.getElementById("nombres").value;
+    const apellidos = document.getElementById("apellidos").value;
+    document.getElementById("nombreCompleto").value = `${nombres} ${apellidos}`.trim();
+    document.getElementById("edad").value = calcularEdad(document.getElementById("fechaNacimiento").value);
+  });
+
+  // Guardar paciente
+  formPaciente.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("pacienteId").value || null;
+
+    const pacienteData = {};
+    Array.from(formPaciente.elements).forEach(el => {
+      if (el.id && el.type !== "button" && el.type !== "submit" && el.type !== "file") {
+        if (el.type === "checkbox") pacienteData[el.id] = el.checked;
+        else pacienteData[el.id] = el.value;
+      }
+    });
+
+    pacienteData.estado = "activo";
+
+    // Subir foto si hay
+    if (inputFoto.files[0]) {
+      const storageRef = firebase.storage().ref();
+      const fileRef = storageRef.child(`pacientes/${Date.now()}_${inputFoto.files[0].name}`);
+      await fileRef.put(inputFoto.files[0]);
+      pacienteData.fotoURL = await fileRef.getDownloadURL();
+    }
+
+    if (id) {
+      // actualizar
+      await db.collection("pacientes").doc(id).update(pacienteData);
+    } else {
+      // nuevo
+      pacienteData.fechaIngreso = new Date().toLocaleString();
+      const docRef = await db.collection("pacientes").add(pacienteData);
+      pacienteData.id = docRef.id;
+      pacientesData.push(pacienteData);
+    }
+
+    closeModal();
+    fetchPacientes();
+  });
+
+  // Inicializar
+  fetchPacientes();
 }
-
-// ===============================
-// Búsqueda y filtros
-// ===============================
-btnBuscar.addEventListener("click", () => cargarPacientes());
-
-btnInactivos.addEventListener("click", () => {
-  mostrandoInactivos = !mostrandoInactivos;
-  btnInactivos.textContent = mostrandoInactivos ? "Activos" : "Inactivos";
-  cargarPacientes();
-});
-
-// ===============================
-// Inicializar carga
-// ===============================
-cargarPacientes();
