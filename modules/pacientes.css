@@ -1,5 +1,5 @@
 /* =========================================================
-   ESTILOS PACIENTES — versión PRO (OdontoCloud) RESPONSIVE
+   ESTILOS PACIENTES — versión FINAL PRO (OdontoCloud)
    ========================================================= */
 
 /* ---------- ESTRUCTURA BASE ---------- */
@@ -12,7 +12,7 @@
   z-index: 1;
   background: #f5f8fb;
   font-family: 'Inter', system-ui, sans-serif;
-  margin-top: 70px !important; /* 🔧 FIX: se bajó para que no quede debajo del menú azul */
+  margin-top: -20px;
 }
 
 /* ---------- TOPBARS ---------- */
@@ -33,6 +33,17 @@
   border-radius: 0 0 10px 10px;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
   z-index: 5;
+  position: relative;
+}
+
+.odc-top-inner {
+  display: flex;
+  align-items: center;
+}
+
+.odc-breadcrumbs {
+  position: relative;
+  z-index: 10;
 }
 
 /* ---------- CONTENIDO PRINCIPAL ---------- */
@@ -49,6 +60,7 @@
   align-items: center;
   margin-bottom: 1rem;
   flex-wrap: wrap;
+  gap: 10px;
 }
 
 .odc-controls-left,
@@ -56,31 +68,50 @@
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 /* ---------- BOTONES ---------- */
 .odc-btn {
-  padding: 0.5rem 0.9rem;
+  padding: 0.45rem 0.9rem;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s ease;
-  font-family: inherit;
+  font-size: 14px;
+  white-space: nowrap;
 }
+
 .odc-btn:hover { opacity: 0.85; }
 
 .odc-btn-blue { background-color: #1976d2; color: white; }
-.odc-btn-green { 
-  background-color: #43a047; 
-  color: white; 
-  white-space: nowrap; /* 🔧 FIX: evita que se divida en dos líneas */
-  padding: 0.5rem 1rem; /* 🔧 FIX: mejora el espaciado horizontal */
-}
+.odc-btn-green { background-color: #43a047; color: white; }
 .odc-btn-inactive { background-color: #757575; color: white; }
 .odc-btn-save { background-color: #2e7d32; color: white; }
 .odc-btn-cancel { background-color: #b71c1c; color: white; }
 .odc-btn-search { background-color: #0288d1; color: white; }
+
+/* Ajuste especial para botón de nuevo paciente */
+#btnNuevoPaciente {
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+}
+
+/* ---------- BUSCADOR ---------- */
+.odc-search {
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  min-width: 280px;
+  transition: border-color 0.2s ease;
+  font-size: 14px;
+}
+
+.odc-search:focus {
+  border-color: #1976d2;
+  outline: none;
+}
 
 /* ---------- TARJETA Y TABLA ---------- */
 .odc-card {
@@ -89,7 +120,7 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   padding: 1.2rem 1.4rem;
   transition: all 0.2s ease;
-  overflow-x: auto; /* ✅ scroll horizontal en móviles */
+  overflow-x: auto;
 }
 
 .odc-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
@@ -98,7 +129,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
-  min-width: 600px; /* ✅ evita deformación */
+  min-width: 600px;
 }
 
 .odc-table th {
@@ -118,6 +149,13 @@
   text-align: center;
   color: #999;
   font-style: italic;
+}
+
+/* ---------- INFO TABLA ---------- */
+.tabla-info {
+  margin-top: 0.5rem;
+  font-size: 13px;
+  color: #555;
 }
 
 /* ==========================================================
