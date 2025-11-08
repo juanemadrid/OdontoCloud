@@ -8,9 +8,12 @@ import {
   addDoc,
   doc,
   setDoc,
-  getDoc
+  getDoc,
+  arrayUnion,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { crearCita } from "./citas.js";
+
 
 window.initAgendaCalendar = (db, auth) => {
   // ------------------------------
@@ -630,7 +633,7 @@ if (btnNuevaCita) btnNuevaCita.addEventListener("click", () => {
 
   box.querySelector("#btnCancelarModal").addEventListener("click", () => modal.remove());
 
-  // 💾 Guardar cita (versión optimizada con pacienteId)
+  // 💾 Guardar cita (versión corregida con búsqueda mejorada y vínculo paciente ↔ cita)
 const form = box.querySelector("#formNuevaCita");
 
 form.addEventListener("submit", async (e) => {
@@ -647,24 +650,22 @@ form.addEventListener("submit", async (e) => {
   }
 
   try {
-    // ✅ Ya tienes estas funciones importadas al inicio del archivo, así que no es necesario reimportarlas.
-    // const { addDoc, collection, doc, setDoc, getDoc, query, where, getDocs } = ...
-
     let pacienteId = null;
+    let pacienteRef = null;
 
     // 🔹 Si es paciente nuevo
     if (esNuevo) {
-      pacienteId = form.querySelector("#npDocumento").value.trim() || nombrePaciente.toLowerCase().replace(/\s+/g, "_");
-      const pacienteRef = doc(db, "pacientes", pacienteId);
-      const pacienteSnap = await getDoc(pacienteRef);
+      const docPaciente = form.querySelector("#npDocumento").value.trim();
+      pacienteId = docPaciente || nombrePaciente.toLowerCase().replace(/\s+/g, "_");
+      pacienteRef = doc(db, "pacientes", pacienteId);
 
-      // 🔸 Solo crea el documento si no existe ya
+      const pacienteSnap = await getDoc(pacienteRef);
       if (!pacienteSnap.exists()) {
         const pacienteData = {
           nombre: form.querySelector("#npNombre").value.trim(),
           apellido: form.querySelector("#npApellido").value.trim(),
           tipoDocumento: form.querySelector("#npTipoDocumento").value,
-          documento: form.querySelector("#npDocumento").value.trim(),
+          documento: docPaciente,
           correo: form.querySelector("#npCorreo").value.trim(),
           indicativo: form.querySelector("#npIndicativo").value,
           celular: form.querySelector("#npCelular").value.trim(),
@@ -673,58 +674,83 @@ form.addEventListener("submit", async (e) => {
           sexo: form.querySelector("#npSexo").value,
           comentario: form.querySelector("#npComentario").value.trim(),
           creado: new Date().toISOString(),
-          activo: true
+          activo: true,
+          citas: []
         };
         await setDoc(pacienteRef, pacienteData);
       }
     } else {
       // 🔹 Buscar paciente existente por nombre o documento
       const nombreBuscar = nombrePaciente.toLowerCase();
-      const q = query(collection(db, "pacientes"), where("nombre", "==", nombreBuscar));
-      const snap = await getDocs(q);
+      const docBuscar = form.querySelector("#buscarPaciente").value.trim();
+
+      const q1 = query(collection(db, "pacientes"), where("nombre", "==", nombreBuscar));
+      const q2 = query(collection(db, "pacientes"), where("documento", "==", docBuscar));
+
+      const [snapNombre, snapDoc] = await Promise.all([getDocs(q1), getDocs(q2)]);
+      const snap = !snapDoc.empty ? snapDoc : snapNombre;
 
       if (!snap.empty) {
+        pacienteRef = snap.docs[0].ref;
         pacienteId = snap.docs[0].id;
       } else {
-        console.warn("No se encontró el paciente, se guardará sin ID asociado.");
+        console.warn("⚠️ No se encontró el paciente, se guardará la cita sin ID asociado.");
       }
     }
 
     // 🔹 Crear cita con vínculo al paciente
+    const fechaSeleccionada = form.querySelector("#ncFecha").value;
+    const horaSeleccionada = form.querySelector("#ncHora").value;
+
+    if (!fechaSeleccionada || !horaSeleccionada) {
+      alert("⚠️ Debes seleccionar fecha y hora para la cita.");
+      return;
+    }
+
     const nuevaCita = {
       paciente: nombrePaciente,
       pacienteId: pacienteId || null,
       doctor: form.querySelector("#ncDoctor").value.trim(),
-      fecha: form.querySelector("#ncFecha").value,
-      horaInicio: form.querySelector("#ncHora").value,
+      fecha: fechaSeleccionada,
+      horaInicio: horaSeleccionada,
       espacio: form.querySelector("#ncEspacio").value.trim(),
       comentario: form.querySelector("#ncComentario").value.trim(),
       estado: "En espera",
       creado: new Date().toISOString(),
     };
 
-    await addDoc(collection(db, "citas"), nuevaCita);
+    const citaRef = await addDoc(collection(db, "citas"), nuevaCita);
 
-    alert("✅ Cita registrada correctamente.");
+    // 🔹 Si hay paciente asociado, actualizar su registro con el ID de la cita
+    if (pacienteRef) {
+      await setDoc(
+        pacienteRef,
+        { citas: arrayUnion(citaRef.id) },
+        { merge: true }
+      );
+    }
+
+    alert("✅ Cita registrada correctamente y vinculada al paciente.");
     modal.remove();
-    loadCitas(); // 🔁 Recarga las citas sin recargar la página
+    loadCitas(); // 🔁 Refresca las citas sin recargar la página
+
   } catch (err) {
     console.error("❌ Error al guardar cita:", err);
     alert("❌ Error al guardar la cita. Revisa la consola para más detalles.");
   }
+}); // ← cierre del submit listener
+
+}); // ← cierre del btnNuevaCita.addEventListener
+
+// ------------------------------
+// AUTH LISTENER
+// ------------------------------
+onAuthStateChanged(auth, (user) => {
+  if (!user) return;
+  renderMiniCalendar(miniCurrent);
+  updateCurrentDateDisplay();
+  loadFilters();
+  loadCitas();
 });
 
-});
-
-
-  // ------------------------------
-  // AUTH LISTENER
-  // ------------------------------
-  onAuthStateChanged(auth, (user) => {
-    if (!user) return;
-    renderMiniCalendar(miniCurrent);
-    updateCurrentDateDisplay();
-    loadFilters();
-    loadCitas();
-  });
-};
+}; // ← cierre final de window.initAgendaCalendar
