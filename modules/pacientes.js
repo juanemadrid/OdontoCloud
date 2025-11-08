@@ -1,181 +1,167 @@
 // modules/pacientes.js
-import { db, storage } from "../app.js";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  addDoc,
-  doc,
-  updateDoc,
-  orderBy,
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-
 export async function initPacientes(db, auth) {
-  const tabla = document.getElementById("tablaPacientes");
+  const tablaPacientes = document.getElementById("tablaPacientes");
   const resultCount = document.getElementById("resultCount");
-  const modal = document.getElementById("modalPaciente");
-  const form = document.getElementById("formPaciente");
-  const btnCerrar = document.getElementById("btnCerrarModal");
-  const btnNuevo = document.getElementById("btnNuevoPaciente");
+  const btnNuevoPaciente = document.getElementById("btnNuevoPaciente");
+  const modalPaciente = document.getElementById("modalPaciente");
+  const btnCerrarModal = document.getElementById("btnCerrarModal");
+  const formPaciente = document.getElementById("formPaciente");
   const btnInactivos = document.getElementById("btnInactivos");
-  const buscarInput = document.getElementById("buscarPaciente");
+  const buscarPaciente = document.getElementById("buscarPaciente");
   const btnBuscar = document.getElementById("btnBuscar");
+  const inputFoto = document.getElementById("inputFoto");
+  const fotoPreview = document.getElementById("fotoPreview");
 
-  let mostrarInactivos = false;
+  let mostrandoInactivos = false;
+  let pacientesData = [];
 
-  // =============================
-  // Función para cargar pacientes
-  // =============================
+  // ===============================
+  // 🔹 Función cargar pacientes
+  // ===============================
   async function cargarPacientes() {
-    tabla.innerHTML = `<tr><td colspan="6">Cargando...</td></tr>`;
-    let q = collection(db, "pacientes");
-    if (!mostrarInactivos) {
-      q = query(q, where("activo", "==", true));
-    }
-    const snapshot = await getDocs(q);
-    const pacientes = [];
-    snapshot.forEach(doc => pacientes.push({ id: doc.id, ...doc.data() }));
+    const pacientesRef = collection(db, "pacientes");
+    const q = pacientesRef; // Podrías agregar filtros si quieres
+    const snapshot = await getDocs(pacientesRef);
+    pacientesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    if (buscarInput.value.trim()) {
-      const term = buscarInput.value.toLowerCase();
-      pacientes = pacientes.filter(p => 
-        p.nombres.toLowerCase().includes(term) ||
-        p.apellidos.toLowerCase().includes(term) ||
-        p.nroDocumento.toLowerCase().includes(term) ||
-        (p.celular?.toLowerCase() || "").includes(term)
-      );
-    }
+    renderTabla();
+  }
 
-    if (pacientes.length === 0) {
-      tabla.innerHTML = `<tr class="sin-datos"><td colspan="6">Sin datos</td></tr>`;
-    } else {
-      tabla.innerHTML = "";
-      pacientes.forEach(p => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${p.nombres} ${p.apellidos}</td>
-          <td>${p.nroDocumento || "-"}</td>
-          <td>${p.fechaIngreso || "-"}</td>
-          <td style="text-align:center">
-            <button class="btn-accion" data-id="${p.id}" data-accion="editar">✏️</button>
-            <button class="btn-accion" data-id="${p.id}" data-accion="${p.activo ? "inactivar" : "activar"}">
-              ${p.activo ? "🔒" : "🔓"}
-            </button>
-          </td>
-        `;
-        tabla.appendChild(tr);
-      });
+  // ===============================
+  // 🔹 Renderizar tabla
+  // ===============================
+  function renderTabla() {
+    tablaPacientes.innerHTML = "";
+    const filtrados = pacientesData.filter(p => p.activo !== false); // activos por defecto
+    const lista = mostrandoInactivos
+      ? pacientesData.filter(p => p.activo === false)
+      : filtrados;
+
+    if (lista.length === 0) {
+      tablaPacientes.innerHTML = `<tr class="sin-datos"><td colspan="6">Sin datos</td></tr>`;
+      resultCount.textContent = 0;
+      return;
     }
 
-    resultCount.textContent = pacientes.length;
+    lista.forEach(p => {
+      const tr = document.createElement("tr");
 
-    // Agregar eventos a botones de acciones
-    document.querySelectorAll(".btn-accion").forEach(btn => {
+      tr.innerHTML = `
+        <td>${p.nombres} ${p.apellidos}</td>
+        <td>${p.nroDocumento || ""}</td>
+        <td>${p.fechaIngreso || ""}</td>
+        <td style="text-align:center">
+          <button class="btn-ver" data-id="${p.id}">Ver</button>
+          <button class="btn-toggle-activo" data-id="${p.id}">
+            ${p.activo === false ? "Activar" : "Inactivar"}
+          </button>
+        </td>
+      `;
+      tablaPacientes.appendChild(tr);
+    });
+
+    resultCount.textContent = lista.length;
+    attachRowButtons();
+  }
+
+  // ===============================
+  // 🔹 Botones de fila
+  // ===============================
+  function attachRowButtons() {
+    document.querySelectorAll(".btn-toggle-activo").forEach(btn => {
       btn.addEventListener("click", async () => {
         const id = btn.dataset.id;
-        const accion = btn.dataset.accion;
-
-        if (accion === "editar") {
-          await editarPaciente(id);
-        } else if (accion === "inactivar" || accion === "activar") {
-          await toggleActivo(id, accion === "activar");
-        }
+        const pacienteRef = doc(db, "pacientes", id);
+        const paciente = pacientesData.find(p => p.id === id);
+        await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js").then(async fire => {
+          await fire.updateDoc(pacienteRef, { activo: paciente.activo === false ? true : false });
+        });
+        await cargarPacientes();
       });
     });
   }
 
-  // =============================
-  // Activar/Inactivar paciente
-  // =============================
-  async function toggleActivo(id, activar) {
-    const refPac = doc(db, "pacientes", id);
-    await updateDoc(refPac, { activo: activar });
-    cargarPacientes();
-  }
-
-  // =============================
-  // Editar paciente
-  // =============================
-  async function editarPaciente(id) {
-    const docRef = doc(db, "pacientes", id);
-    const snap = await getDocs(query(collection(db, "pacientes"), where("__name__", "==", id)));
-    if (!snap.empty) {
-      const data = snap.docs[0].data();
-      for (const key in data) {
-        const input = document.getElementById(key);
-        if (input) input.value = data[key];
-      }
-      document.getElementById("pacienteId").value = id;
-      modal.style.display = "block";
-    }
-  }
-
-  // =============================
-  // Abrir modal nuevo paciente
-  // =============================
-  btnNuevo.addEventListener("click", () => {
-    form.reset();
-    document.getElementById("pacienteId").value = "";
-    modal.style.display = "block";
+  // ===============================
+  // 🔹 Botón Nuevo Paciente
+  // ===============================
+  btnNuevoPaciente.addEventListener("click", () => {
+    formPaciente.reset();
+    fotoPreview.style.display = "none";
+    modalPaciente.style.display = "block";
   });
 
-  btnCerrar.addEventListener("click", () => {
-    modal.style.display = "none";
+  btnCerrarModal.addEventListener("click", () => {
+    modalPaciente.style.display = "none";
   });
 
-  // =============================
-  // Guardar paciente
-  // =============================
-  form.addEventListener("submit", async (e) => {
+  // ===============================
+  // 🔹 Guardar paciente
+  // ===============================
+  formPaciente.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const id = document.getElementById("pacienteId").value;
-    const fotoFile = document.getElementById("inputFoto").files[0];
-
-    const pacienteData = {
+    const data = {
+      tipoDocumento: document.getElementById("tipoDocumento").value,
+      nroDocumento: document.getElementById("nroDocumento").value,
       nombres: document.getElementById("nombres").value,
       apellidos: document.getElementById("apellidos").value,
-      nroDocumento: document.getElementById("nroDocumento").value,
       fechaIngreso: document.getElementById("fechaIngreso").value,
       activo: true,
-      // Agrega más campos según tu formulario
+      // agregar más campos aquí según tu formulario
     };
 
-    if (fotoFile) {
-      const storageRef = ref(storage, `pacientes/${fotoFile.name}`);
-      await uploadBytes(storageRef, fotoFile);
-      const url = await getDownloadURL(storageRef);
-      pacienteData.fotoURL = url;
-    }
+    const pacientesRef = collection(db, "pacientes");
+    await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js").then(async fire => {
+      if (document.getElementById("pacienteId").value) {
+        const pacienteRef = doc(db, "pacientes", document.getElementById("pacienteId").value);
+        await fire.updateDoc(pacienteRef, data);
+      } else {
+        await fire.addDoc(pacientesRef, data);
+      }
+    });
 
-    if (id) {
-      // Actualizar paciente
-      const docRef = doc(db, "pacientes", id);
-      await updateDoc(docRef, pacienteData);
-    } else {
-      // Crear nuevo paciente
-      await addDoc(collection(db, "pacientes"), pacienteData);
-    }
-
-    modal.style.display = "none";
-    cargarPacientes();
+    modalPaciente.style.display = "none";
+    await cargarPacientes();
   });
 
-  // =============================
-  // Filtros y búsqueda
-  // =============================
+  // ===============================
+  // 🔹 Mostrar inactivos
+  // ===============================
   btnInactivos.addEventListener("click", () => {
-    mostrarInactivos = !mostrarInactivos;
-    btnInactivos.textContent = mostrarInactivos ? "Activos" : "Inactivos";
-    cargarPacientes();
+    mostrandoInactivos = !mostrandoInactivos;
+    btnInactivos.textContent = mostrandoInactivos ? "Activos" : "Inactivos";
+    renderTabla();
   });
 
-  btnBuscar.addEventListener("click", cargarPacientes);
-  buscarInput.addEventListener("keyup", (e) => { if (e.key === "Enter") cargarPacientes(); });
+  // ===============================
+  // 🔹 Vista previa foto
+  // ===============================
+  inputFoto.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        fotoPreview.src = ev.target.result;
+        fotoPreview.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    }
+  });
 
-  // =============================
-  // Inicializar
-  // =============================
-  cargarPacientes();
+  // ===============================
+  // 🔹 Buscar paciente
+  // ===============================
+  btnBuscar.addEventListener("click", () => {
+    const term = buscarPaciente.value.toLowerCase();
+    pacientesData = pacientesData.filter(p => 
+      p.nombres.toLowerCase().includes(term) ||
+      p.apellidos.toLowerCase().includes(term) ||
+      (p.nroDocumento || "").toLowerCase().includes(term)
+    );
+    renderTabla();
+  });
+
+  // ===============================
+  // 🔹 Cargar al inicio
+  // ===============================
+  await cargarPacientes();
 }
