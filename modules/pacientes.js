@@ -1,11 +1,22 @@
 // modules/pacientes.js
-// Versión mejorada: edición + inactivar + lista de doctores + robustez
+// Versión mejorada y lista para reemplazar — mantiene la UI tal como está (HTML/CSS) y añade:
+// - Guardado/actualización en Firestore
+// - Listado y búsqueda (en tiempo real al teclear)
+// - Editar (cargar datos al modal)
+// - Inactivar (marcar activo: false)
+// - Población del dropdown de doctores (si existe colección "doctores")
+// - Cálculo de edad automático desde fecha de nacimiento
+// - Protección para no romper nada visual (no cambia HTML/CSS, usa los IDs existentes)
+//
+// Reemplaza totalmente tu archivo pacientes.js por este. No modifica HTML/CSS, solo añade lógica.
+// NOTA: requiere que `window.db` (Firestore) y `window.auth` estén disponibles en la página.
+
 (function () {
   if (window.__odc_pacientes_loaded) return;
   window.__odc_pacientes_loaded = true;
 
   function initPacientes(db, auth) {
-    console.log("✅ initPacientes cargado correctamente");
+    console.log("✅ initPacientes cargado correctamente (mejorado)");
 
     const IDS = {
       modal: "modalPaciente",
@@ -19,36 +30,39 @@
       btnInactivos: "btnInactivos",
       btnFiltroDoctor: "btnFiltroDoctor",
       doctorList: "doctorList",
-      doctorDropdown: "doctorDropdown",
+      fotoInput: "inputFoto",
+      fotoPreview: "fotoPreview",
+      pacienteIdHidden: "pacienteId",
+      // campos del formulario (según tu HTML)
+      nroDocumento: "nroDocumento",
+      nombres: "nombres",
+      apellidos: "apellidos",
+      nombreCompleto: "nombreCompleto",
+      fechaNacimiento: "fechaNacimiento",
+      edad: "edad",
+      celular: "celular",
+      email: "email",
+      doctorField: "doctor",
+      tipoDocumento: "tipoDocumento",
+      paisNacimiento: "paisNacimiento",
+      ciudadNacimiento: "ciudadNacimiento",
+      paisDomicilio: "paisDomicilio",
+      ciudadDomicilio: "ciudadDomicilio",
+      barrio: "barrio",
+      lugarResidencia: "lugarResidencia",
+      notas: "notas",
+      // otros campos pueden añadirse fácilmente aquí...
     };
 
+    // Estado local
     let bound = false;
     let currentFilterDoctor = "";
     let currentShowInactivos = false;
+    let lastSearchTerm = "";
 
-    function openModal() {
-      const modal = document.getElementById(IDS.modal);
-      if (!modal) return console.warn("❌ No se encontró #modalPaciente");
-      modal.style.display = "flex";
-      modal.setAttribute("aria-hidden", "false");
-    }
-
-    function closeModal() {
-      const modal = document.getElementById(IDS.modal);
-      const form = document.getElementById(IDS.form);
-      if (modal) {
-        modal.style.display = "none";
-        modal.setAttribute("aria-hidden", "true");
-      }
-      if (form) try { form.reset(); } catch (e) {}
-      // limpiar pacienteId y campos ocultos
-      const pid = document.getElementById("pacienteId");
-      if (pid) pid.value = "";
-      const hiddenIds = ["inputNombre","inputDocumento","inputTelefono","inputEps","inputDoctor"];
-      hiddenIds.forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
-      // limpiar nombreCompleto
-      const nombreCompleto = document.getElementById("nombreCompleto");
-      if (nombreCompleto) nombreCompleto.value = "";
+    // Utilidades
+    function qid(id) {
+      return document.getElementById(id);
     }
 
     function escapeHtml(s) {
@@ -60,18 +74,29 @@
         .replaceAll('"', "&quot;");
     }
 
+    function calcularEdadDesdeFecha(fechaISO) {
+      if (!fechaISO) return "";
+      const n = new Date(fechaISO);
+      if (isNaN(n)) return "";
+      const diff = Date.now() - n.getTime();
+      const ageDt = new Date(diff);
+      const years = Math.abs(ageDt.getUTCFullYear() - 1970);
+      return String(years);
+    }
+
+    // Render de tabla
     function renderPacientes(rows) {
-      const tbody = document.getElementById(IDS.tabla);
-      const countEl = document.getElementById("resultCount");
+      const tbody = qid(IDS.tabla);
+      const countEl = qid("resultCount");
       if (!tbody) return;
       if (!rows || rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6">Sin datos</td></tr>`;
+        tbody.innerHTML = `<tr class="sin-datos"><td colspan="6">Sin datos</td></tr>`;
         if (countEl) countEl.textContent = "0";
         return;
       }
       let html = "";
-      rows.forEach((r) => {
-        const fecha = r.createdAt || r.fechaIngreso || "";
+      for (const r of rows) {
+        const fecha = r.createdAt ? r.createdAt : (r.fechaIngreso || "");
         html += `
           <tr>
             <td>${escapeHtml(r.nombre)}</td>
@@ -82,328 +107,432 @@
               <button class="btn-inactivar" data-id="${escapeHtml(r.id)}">Inactivar</button>
             </td>
           </tr>`;
-      });
+      }
       tbody.innerHTML = html;
       if (countEl) countEl.textContent = String(rows.length);
-
-      // Delegación: manejar editar / inactivar (la tabla se re-renderiza)
-      tbody.removeEventListener?.("click", tbody._clickHandler);
-      const clickHandler = async (e) => {
-        const editBtn = e.target.closest(".btn-editar");
-        if (editBtn) {
-          const id = editBtn.dataset.id;
-          if (id) await onEditarPaciente(id);
-          return;
-        }
-        const inactBtn = e.target.closest(".btn-inactivar");
-        if (inactBtn) {
-          const id = inactBtn.dataset.id;
-          if (id) await onInactivarPaciente(id);
-          return;
-        }
-      };
-      tbody._clickHandler = clickHandler;
-      tbody.addEventListener("click", clickHandler);
     }
 
+    // Buscar/listar pacientes (local filtering client-side)
     async function buscarPacientes(term = "", filterDoctor = "", showInactivos = false) {
       term = (term || "").trim().toLowerCase();
+      lastSearchTerm = term;
       filterDoctor = (filterDoctor || "").trim();
       try {
-        if (db) {
-          const { collection, getDocs, query, orderBy } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
-          const cRef = collection(db, "pacientes");
-          const snap = await getDocs(query(cRef, orderBy("nombre")));
-          const rows = [];
-          snap.forEach((d) => {
-            const data = d.data();
-            const id = d.id;
-            const nombre = (data.nombre || "").toString();
-            const documento = (data.documento || "").toString();
-            const telefono = (data.celular || data.telefono || "").toString();
-            const doctor = (data.doctor || "").toString();
-            const activo = data.activo === false ? false : true;
-            if (!showInactivos && !activo) return;
-            if (filterDoctor && filterDoctor !== "__all" && doctor !== filterDoctor) return;
-            const hay = `${nombre} ${documento} ${telefono}`.toLowerCase();
-            if (term && !hay.includes(term)) return;
-            rows.push({ id, nombre, documento, telefono, doctor, createdAt: data.creado || data.fechaIngreso || "" });
-          });
-          renderPacientes(rows);
-        } else {
+        if (!db) {
           renderPacientes([]);
+          return;
         }
+        const { collection, getDocs, query, orderBy } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
+        const cRef = collection(db, "pacientes");
+        // obtenemos todos ordenados por nombre (si la colección es grande, luego optimizamos con paginación/queries)
+        const snap = await getDocs(query(cRef, orderBy("nombre")));
+        const rows = [];
+        snap.forEach((d) => {
+          const data = d.data() || {};
+          const id = d.id;
+          const nombre = `${data.nombre || ""} ${data.apellido || ""}`.trim() || (data.nombre || "");
+          const documento = (data.documento || "").toString();
+          const telefono = (data.celular || data.telefono || "").toString();
+          const doctor = (data.doctor || "").toString();
+          const activo = data.activo === false ? false : true;
+          if (!showInactivos && !activo) return;
+          if (filterDoctor && filterDoctor !== "__all" && doctor !== filterDoctor) return;
+          const hay = `${nombre} ${documento} ${telefono}`.toLowerCase();
+          if (term && !hay.includes(term)) return;
+          rows.push({
+            id,
+            nombre,
+            documento,
+            telefono,
+            doctor,
+            createdAt: data.creado || data.fechaIngreso || "",
+          });
+        });
+        renderPacientes(rows);
       } catch (err) {
         console.error("Error buscando pacientes:", err);
         renderPacientes([]);
       }
     }
 
-    // Carga la lista de doctores para el dropdown de filtro
-    async function loadDoctorList() {
-      try {
-        if (!db) return;
-        const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
-        const cRef = collection(db, "doctores");
-        const snap = await getDocs(cRef);
-        const listEl = document.getElementById("doctorList");
-        if (!listEl) return;
-        // limpiar existentes excepto "Todos"
-        listEl.innerHTML = `<button class="odc-dropdown-item" data-doctor="__all">Todos</button>`;
-        snap.forEach((d) => {
-          const name = d.data()?.nombre || d.id;
-          const btn = document.createElement("button");
-          btn.className = "odc-dropdown-item";
-          btn.dataset.doctor = String(name);
-          btn.textContent = String(name);
-          listEl.appendChild(btn);
-        });
-      } catch (err) {
-        console.warn("No se pudo cargar la lista de doctores:", err);
+    // Abrir y cerrar modal
+    function openModal() {
+      const modal = qid(IDS.modal);
+      if (!modal) return console.warn("❌ No se encontró #modalPaciente");
+      modal.style.display = "flex";
+      modal.setAttribute("aria-hidden", "false");
+    }
+    function closeModal() {
+      const modal = qid(IDS.modal);
+      const form = qid(IDS.form);
+      if (modal) {
+        modal.style.display = "none";
+        modal.setAttribute("aria-hidden", "true");
+      }
+      if (form) {
+        try {
+          form.reset();
+          // limpiar preview foto si existe
+          const fp = qid(IDS.fotoPreview);
+          if (fp) { fp.src = ""; fp.style.display = "none"; }
+          // limpiar pacienteId
+          const hid = qid(IDS.pacienteIdHidden);
+          if (hid) hid.value = "";
+          // limpiar nombreCompleto readonly
+          const nc = qid(IDS.nombreCompleto);
+          if (nc) nc.value = "";
+          // limpiar edad
+          const age = qid(IDS.edad);
+          if (age) age.value = "";
+        } catch (e) {
+          // ignore
+        }
       }
     }
 
-    // Cargar datos del paciente y llenar el formulario para edición
-    async function onEditarPaciente(id) {
+    // Cargar paciente al modal para editar
+    async function cargarPacienteEnModal(id) {
+      if (!db) {
+        alert("Base de datos no disponible (simulación).");
+        return;
+      }
       try {
-        if (!confirm("Cargar paciente para editar?")) return;
-        if (!db) {
-          alert("DB no disponible localmente.");
-          return;
-        }
         const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
         const ref = doc(db, "pacientes", id);
         const snap = await getDoc(ref);
         if (!snap.exists()) {
-          alert("Paciente no encontrado.");
+          alert("No se encontró el paciente en la base de datos.");
           return;
         }
         const data = snap.data() || {};
-        // Rellenar campos visibles/ocultos (no tocar estructura visual)
-        const fullName = (data.nombre || "").toString();
-        const documento = data.documento || "";
-        const celular = data.celular || data.telefono || "";
-        const nombreEps = data.correo || data.nombreEps || ""; // fallback
-        const doctor = data.doctor || "";
-
-        // Set pacienteId hidden
-        const pid = document.getElementById("pacienteId");
-        if (pid) pid.value = id;
-
-        // Campos ocultos que usa el JS de guardado
-        const inNombre = document.getElementById("inputNombre");
-        const inDocumento = document.getElementById("inputDocumento");
-        const inTelefono = document.getElementById("inputTelefono");
-        const inEps = document.getElementById("inputEps");
-        const inDoctor = document.getElementById("inputDoctor");
-        if (inNombre) inNombre.value = fullName;
-        if (inDocumento) inDocumento.value = documento;
-        if (inTelefono) inTelefono.value = celular;
-        if (inEps) inEps.value = nombreEps;
-        if (inDoctor) inDoctor.value = doctor;
-
-        // Campos visibles del formulario (intentar rellenar lo mínimo necesario para UX)
-        const nombresEl = document.getElementById("nombres");
-        const apellidosEl = document.getElementById("apellidos");
-        const nombreCompletoEl = document.getElementById("nombreCompleto");
-        const nroDocumentoEl = document.getElementById("nroDocumento");
-        const celularEl = document.getElementById("celular");
-        const nombreEpsEl = document.getElementById("nombreEps");
-        const doctorEl = document.getElementById("doctor");
-
-        // Split nombre en nombres/apellidos (mejor que nada)
-        if (fullName && (!nombresEl?.value && !apellidosEl?.value)) {
-          const parts = fullName.split(" ");
-          if (nombresEl) nombresEl.value = parts.shift() || "";
-          if (apellidosEl) apellidosEl.value = parts.join(" ") || "";
-        } else {
-          if (nombresEl && data.nombres) nombresEl.value = data.nombres;
-          if (apellidosEl && data.apellidos) apellidosEl.value = data.apellidos;
-        }
-
-        if (nombreCompletoEl) nombreCompletoEl.value = fullName;
-        if (nroDocumentoEl) nroDocumentoEl.value = documento;
-        if (celularEl) celularEl.value = celular;
-        if (nombreEpsEl) nombreEpsEl.value = data.nombreEps || data.correo || "";
-        if (doctorEl) doctorEl.value = doctor;
-
-        // Abrir modal
+        // Mapear campos del documento a los fields del formulario
+        qid(IDS.pacienteIdHidden).value = id;
+        qid(IDS.nroDocumento).value = data.documento || "";
+        qid(IDS.nombres).value = data.nombre || "";
+        qid(IDS.apellidos).value = data.apellido || "";
+        qid(IDS.nombreCompleto).value = `${data.nombre || ""} ${data.apellido || ""}`.trim();
+        if (data.fechaNacimiento) qid(IDS.fechaNacimiento).value = data.fechaNacimiento;
+        qid(IDS.edad).value = calcularEdadDesdeFecha(data.fechaNacimiento);
+        qid(IDS.celular).value = data.celular || data.telefono || "";
+        qid(IDS.email).value = data.correo || data.email || "";
+        qid(IDS.doctorField).value = data.doctor || "";
+        qid(IDS.tipoDocumento).value = data.tipoDocumento || "";
+        qid(IDS.paisNacimiento).value = data.paisNacimiento || "";
+        qid(IDS.ciudadNacimiento).value = data.ciudadNacimiento || "";
+        qid(IDS.paisDomicilio).value = data.paisDomicilio || "";
+        qid(IDS.ciudadDomicilio).value = data.ciudadDomicilio || "";
+        qid(IDS.barrio).value = data.barrio || "";
+        qid(IDS.lugarResidencia).value = data.lugarResidencia || "";
+        qid(IDS.notas).value = data.notas || data.comentario || "";
+        // foto preview si está guardada como URL
+        try {
+          const fp = qid(IDS.fotoPreview);
+          if (fp && data.fotoUrl) {
+            fp.src = data.fotoUrl;
+            fp.style.display = "block";
+          }
+        } catch (e) {}
         openModal();
       } catch (err) {
-        console.error("Error al cargar paciente:", err);
-        alert("Error cargando paciente. Mira la consola.");
+        console.error("Error cargando paciente:", err);
+        alert("Error cargando paciente. Revisa consola.");
       }
     }
 
-    // Inactivar paciente (set activo:false). Si ya está inactivo, pregunta para activar.
-    async function onInactivarPaciente(id) {
+    // Inactivar paciente
+    async function inactivarPaciente(id) {
+      if (!confirm("¿Inactivar paciente? Esto marcará al paciente como inactivo.")) return;
       try {
         if (!db) {
-          alert("DB no disponible.");
+          alert("DB no disponible (simulación).");
           return;
         }
-        const { doc, getDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
+        const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
         const ref = doc(db, "pacientes", id);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) {
-          alert("Paciente no encontrado.");
-          return;
-        }
-        const data = snap.data() || {};
-        const isActive = data.activo === false ? false : true;
-        const action = isActive ? "Inactivar" : "Reactivar";
-        if (!confirm(`${action} paciente ${data.nombre || ""}?`)) return;
-        await setDoc(ref, { activo: !isActive }, { merge: true });
-        alert(`✅ Paciente ${isActive ? "inactivado" : "reactivado"} correctamente.`);
-        await buscarPacientes(document.getElementById(IDS.buscarInput)?.value || "", currentFilterDoctor, currentShowInactivos);
+        await updateDoc(ref, { activo: false });
+        alert("Paciente inactivado.");
+        await buscarPacientes(lastSearchTerm, currentFilterDoctor, currentShowInactivos);
       } catch (err) {
-        console.error("Error al (in)activar paciente:", err);
-        alert("Error actualizando estado. Revisa la consola.");
+        console.error("Error inactivando paciente:", err);
+        alert("Error al inactivar. Revisa la consola.");
       }
     }
 
+    // Guardar o actualizar paciente desde formulario
+    async function guardarPacienteDesdeFormulario() {
+      const form = qid(IDS.form);
+      if (!form) return;
+      // leer campos (seguro para que estén presentes)
+      const idHidden = qid(IDS.pacienteIdHidden)?.value?.trim();
+      const documento = qid(IDS.nroDocumento)?.value?.trim();
+      const nombre = qid(IDS.nombres)?.value?.trim();
+      const apellido = qid(IDS.apellidos)?.value?.trim();
+      const fechaNacimiento = qid(IDS.fechaNacimiento)?.value || "";
+      const celular = qid(IDS.celular)?.value?.trim();
+      const email = qid(IDS.email)?.value?.trim();
+      const doctor = qid(IDS.doctorField)?.value?.trim();
+      const tipoDocumento = qid(IDS.tipoDocumento)?.value?.trim();
+      const paisNacimiento = qid(IDS.paisNacimiento)?.value?.trim();
+      const ciudadNacimiento = qid(IDS.ciudadNacimiento)?.value?.trim();
+      const paisDomicilio = qid(IDS.paisDomicilio)?.value?.trim();
+      const ciudadDomicilio = qid(IDS.ciudadDomicilio)?.value?.trim();
+      const barrio = qid(IDS.barrio)?.value?.trim();
+      const lugarResidencia = qid(IDS.lugarResidencia)?.value?.trim();
+      const notas = qid(IDS.notas)?.value?.trim();
+
+      if (!nombre || !apellido || !documento) {
+        alert("Por favor completa Nombre, Apellido y Número de documento.");
+        return;
+      }
+
+      const idToUse = idHidden || documento.replace(/\s+/g, "_");
+
+      try {
+        if (!db) {
+          console.log("Simulación guardar paciente:", { idToUse, nombre, apellido, documento });
+          alert("Simulación: paciente guardado (DB no disponible).");
+          closeModal();
+          await buscarPacientes();
+          return;
+        }
+
+        // Construir payload que sea razonable y no rompa la estructura existente
+        const payload = {
+          nombre,
+          apellido,
+          nombreCompleto: `${nombre} ${apellido}`.trim(),
+          documento,
+          tipoDocumento: tipoDocumento || null,
+          fechaNacimiento: fechaNacimiento || null,
+          edad: fechaNacimiento ? calcularEdadDesdeFecha(fechaNacimiento) : null,
+          celular: celular || null,
+          correo: email || null,
+          email: email || null,
+          doctor: doctor || null,
+          paisNacimiento: paisNacimiento || null,
+          ciudadNacimiento: ciudadNacimiento || null,
+          paisDomicilio: paisDomicilio || null,
+          ciudadDomicilio: ciudadDomicilio || null,
+          barrio: barrio || null,
+          lugarResidencia: lugarResidencia || null,
+          notas: notas || null,
+          activo: true,
+          creado: new Date().toISOString(),
+        };
+
+        // Si hay una imagen seleccionada en inputFoto, intentar subir a campo fotoUrl como data URL (opcional).
+        const inputFoto = qid(IDS.fotoInput);
+        if (inputFoto && inputFoto.files && inputFoto.files[0]) {
+          // leer como base64 — si prefieres subir a Storage en el futuro, lo cambiamos.
+          const file = inputFoto.files[0];
+          const reader = await new Promise((res, rej) => {
+            const r = new FileReader();
+            r.onload = () => res(r.result);
+            r.onerror = rej;
+            r.readAsDataURL(file);
+          });
+          // Atención: base64 puede ser grande, si no quieres guardarlo en Firestore debes subir a Storage.
+          payload.fotoUrl = reader;
+        }
+
+        const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
+        const ref = doc(db, "pacientes", idToUse);
+        // merge true para no borrar info extra
+        await setDoc(ref, payload, { merge: true });
+
+        alert("✅ Paciente guardado correctamente.");
+        closeModal();
+        await buscarPacientes(lastSearchTerm, currentFilterDoctor, currentShowInactivos);
+      } catch (err) {
+        console.error("Error guardando paciente:", err);
+        alert("Error guardando paciente. Revisa la consola.");
+      }
+    }
+
+    // Población del dropdown de doctores (si existe la colección)
+    async function poblarDoctorList() {
+      try {
+        if (!db) return;
+        const { collection, getDocs, query, orderBy } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
+        const cRef = collection(db, "doctores");
+        const snap = await getDocs(query(cRef, orderBy("nombre")));
+        const container = qid(IDS.doctorList);
+        if (!container) return;
+        // mantener el botón 'Todos'
+        let html = `<button class="odc-dropdown-item" data-doctor="__all">Todos</button>`;
+        snap.forEach((d) => {
+          const name = d.data()?.nombre || d.id;
+          html += `<button class="odc-dropdown-item" data-doctor="${escapeHtml(String(name))}">${escapeHtml(String(name))}</button>`;
+        });
+        container.innerHTML = html;
+      } catch (err) {
+        // no es crítico
+        console.warn("No se pudo poblar doctorList:", err);
+      }
+    }
+
+    // Bind de eventos — solo una vez
     function bindOnce() {
       if (bound) return;
-      const btnNuevo = document.getElementById(IDS.btnNuevo);
-      const btnCerrar = document.getElementById(IDS.btnCerrar);
-      const btnCancelar = document.getElementById(IDS.btnCancelar);
-      const modal = document.getElementById(IDS.modal);
-      const form = document.getElementById(IDS.form);
-      const buscarInput = document.getElementById(IDS.buscarInput);
-      const btnBuscar = document.getElementById(IDS.btnBuscar);
-      const btnInactivos = document.getElementById(IDS.btnInactivos);
-      const btnFiltroDoctor = document.getElementById(IDS.btnFiltroDoctor);
-      const doctorList = document.getElementById(IDS.doctorList);
-      const doctorDropdown = document.getElementById(IDS.doctorDropdown);
-      const tabla = document.getElementById(IDS.tabla);
+      const btnNuevo = qid(IDS.btnNuevo);
+      const btnCerrar = qid(IDS.btnCerrar);
+      const btnCancelar = qid(IDS.btnCancelar);
+      const modal = qid(IDS.modal);
+      const form = qid(IDS.form);
+      const buscarInput = qid(IDS.buscarInput);
+      const btnBuscar = qid(IDS.btnBuscar);
+      const btnInactivos = qid(IDS.btnInactivos);
+      const btnFiltroDoctor = qid(IDS.btnFiltroDoctor);
+      const doctorList = qid(IDS.doctorList);
+      const tabla = qid(IDS.tabla);
+      const fotoInput = qid(IDS.fotoInput);
+      const fechaNacimientoInput = qid(IDS.fechaNacimiento);
+      const nombreInput = qid(IDS.nombres);
+      const apellidoInput = qid(IDS.apellidos);
+      const nombreCompletoInput = qid(IDS.nombreCompleto);
 
-      if (!btnNuevo || !modal || !form) return false;
+      if (!btnNuevo || !modal || !form) {
+        console.warn("Elementos esenciales no encontrados. Revisar HTML (btnNuevo/modal/form).");
+        return false;
+      }
 
-      // abrir modal nuevo
       btnNuevo.addEventListener("click", (e) => { e.preventDefault(); openModal(); });
 
-      // cerrar modal botones
       btnCerrar?.addEventListener("click", (e) => { e.preventDefault(); closeModal(); });
       btnCancelar?.addEventListener("click", (e) => { e.preventDefault(); closeModal(); });
 
-      // cerrar modal al click en backdrop
+      // cerrar al click en backdrop
       modal.addEventListener("click", (e) => {
-        if (e.target.classList.contains("odc-modal-backdrop")) closeModal();
+        if (e.target.classList && e.target.classList.contains("odc-modal-backdrop")) closeModal();
       });
 
-      // SUBMIT: guardar paciente (create/update)
+      // submit del formulario
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-
-        // Recolectar datos desde los inputs ocultos (sin alterar formulario visual)
-        const pacienteIdHidden = (document.getElementById("pacienteId")?.value || "").trim();
-        const nombre = (document.getElementById("inputNombre")?.value || "").trim();
-        const documento = (document.getElementById("inputDocumento")?.value || "").trim();
-        const telefono = (document.getElementById("inputTelefono")?.value || "").trim();
-        const eps = (document.getElementById("inputEps")?.value || "").trim();
-        const doctor = (document.getElementById("inputDoctor")?.value || "").trim();
-
-        if (!nombre || !documento) { alert("Completa Nombre y Documento"); return; }
-
-        try {
-          if (db) {
-            const { doc, getDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
-            // if pacienteIdHidden present, use it; otherwise generate from documento
-            const idCandidate = pacienteIdHidden || documento.replace(/\s+/g, "_");
-            const ref = doc(db, "pacientes", idCandidate);
-
-            // build payload - tomar valores adicionales visibles si existen
-            const payload = {
-              nombre,
-              documento,
-              celular: telefono,
-              telefono: telefono,
-              correo: eps || (document.getElementById("email")?.value || ""),
-              nombreEps: document.getElementById("nombreEps")?.value || "",
-              doctor: doctor || document.getElementById("doctor")?.value || "",
-              creado: new Date().toISOString(),
-              activo: true
-            };
-
-            // merge true para no sobreescribir campos no provistos
-            await setDoc(ref, payload, { merge: true });
-          } else {
-            console.log("DB no disponible — simulando guardado", { nombre, documento });
-          }
-
-          alert("✅ Paciente guardado correctamente.");
-          closeModal();
-          await buscarPacientes();
-        } catch (err) {
-          console.error("Error guardando paciente:", err);
-          alert("Error guardando paciente. Mira la consola.");
-        }
+        await guardarPacienteDesdeFormulario();
       });
 
-      // INPUT búsqueda live
-      if (buscarInput) {
-        buscarInput.addEventListener("input", async (e) => {
-          await buscarPacientes(e.target.value, currentFilterDoctor, currentShowInactivos);
+      // preview imagen (ya tienes script en HTML, pero lo dejamos por si falta)
+      if (fotoInput) {
+        fotoInput.addEventListener("change", (e) => {
+          const file = e.target.files[0];
+          const preview = qid(IDS.fotoPreview);
+          if (file && preview) {
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+              preview.src = ev.target.result;
+              preview.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+          }
         });
       }
 
-      // botón buscar
-      btnBuscar?.addEventListener("click", async (e) => {
-        e.preventDefault();
-        await buscarPacientes(buscarInput?.value || "", currentFilterDoctor, currentShowInactivos);
+      // calcular nombre completo automáticamente
+      if (nombreInput || apellidoInput) {
+        const updateFullName = () => {
+          try {
+            const n = nombreInput?.value?.trim() || "";
+            const a = apellidoInput?.value?.trim() || "";
+            if (nombreCompletoInput) nombreCompletoInput.value = `${n} ${a}`.trim();
+          } catch (e) {}
+        };
+        nombreInput?.addEventListener("input", updateFullName);
+        apellidoInput?.addEventListener("input", updateFullName);
+      }
+
+      // calcular edad al cambiar fecha de nacimiento
+      fechaNacimientoInput?.addEventListener("change", (e) => {
+        const v = e.target.value;
+        const edadField = qid(IDS.edad);
+        if (edadField) edadField.value = calcularEdadDesdeFecha(v);
       });
 
-      // botón mostrar inactivos
+      // búsqueda en input (teclear)
+      if (buscarInput) {
+        let debounceTimer = null;
+        buscarInput.addEventListener("input", (e) => {
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(async () => {
+            await buscarPacientes(e.target.value, currentFilterDoctor, currentShowInactivos);
+          }, 220);
+        });
+      }
+
+      btnBuscar?.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await buscarPacientes(qid(IDS.buscarInput)?.value || "", currentFilterDoctor, currentShowInactivos);
+      });
+
       btnInactivos?.addEventListener("click", async (e) => {
         e.preventDefault();
         currentShowInactivos = !currentShowInactivos;
         btnInactivos.classList.toggle("active", currentShowInactivos);
-        await buscarPacientes(buscarInput?.value || "", currentFilterDoctor, currentShowInactivos);
+        await buscarPacientes(qid(IDS.buscarInput)?.value || "", currentFilterDoctor, currentShowInactivos);
       });
 
-      // botón filtro doctor (muestra/oculta dropdown)
+      // toggle dropdown doctores
       btnFiltroDoctor?.addEventListener("click", () => {
         const dd = document.getElementById("doctorDropdown");
         if (!dd) return;
-        const hidden = dd.style.display === "none" || dd.getAttribute("aria-hidden") === "true";
+        const hidden = dd.style.display === "none" || dd.getAttribute("aria-hidden") === "true" || !dd.style.display;
         dd.style.display = hidden ? "block" : "none";
         dd.setAttribute("aria-hidden", hidden ? "false" : "true");
       });
 
-      // selección doctor en dropdown
+      // selección doctor desde dropdown
       doctorList?.addEventListener("click", async (e) => {
         const btn = e.target.closest(".odc-dropdown-item");
         if (!btn) return;
         const doctor = btn.dataset.doctor || "__all";
         currentFilterDoctor = doctor === "__all" ? "" : doctor;
         document.getElementById("doctorDropdown").style.display = "none";
-        await buscarPacientes(buscarInput?.value || "", currentFilterDoctor, currentShowInactivos);
+        await buscarPacientes(qid(IDS.buscarInput)?.value || "", currentFilterDoctor, currentShowInactivos);
       });
 
-      // cargar lista de doctores al init
-      loadDoctorList();
+      // Delegación de eventos para botones Editar / Inactivar en la tabla
+      tabla?.addEventListener("click", async (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        if (btn.classList.contains("btn-editar")) {
+          const id = btn.dataset.id;
+          if (id) await cargarPacienteEnModal(id);
+        } else if (btn.classList.contains("btn-inactivar")) {
+          const id = btn.dataset.id;
+          if (id) await inactivarPaciente(id);
+        }
+      });
 
       bound = true;
       console.log("🎯 Listeners pacientes conectados correctamente");
       return true;
     }
 
+    // Intentar bind repetidamente hasta que el HTML exista
     const tryBind = async () => {
       const ok = bindOnce();
       if (ok) {
+        // poblar doctores y listar pacientes inicial
+        await poblarDoctorList();
         await buscarPacientes("", currentFilterDoctor, currentShowInactivos);
         return;
       }
-      setTimeout(tryBind, 300);
+      setTimeout(tryBind, 250);
     };
 
     tryBind();
   }
 
+  // Export init para uso externo
   window.initPacientes = initPacientes;
 
+  // Auto-init si DOM listo y window.db provisto
   document.addEventListener("DOMContentLoaded", () => {
-    try { initPacientes(window.db, window.auth); }
-    catch (err) { console.error("initPacientes autoinit error:", err); }
+    try {
+      // intenta inicializar con window.db/ window.auth si existen
+      initPacientes(window.db, window.auth);
+    } catch (err) {
+      console.error("initPacientes autoinit error:", err);
+    }
   });
 })();
