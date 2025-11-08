@@ -106,6 +106,18 @@
   min-width: 280px;
   transition: border-color 0.2s ease;
   font-size: 14px;
+  vertical-align: middle;
+}
+
+/* 🔧 Alineación con el texto “Buscar” */
+.odc-controls label[for="buscarPaciente"],
+.odc-controls .buscar-label {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  margin-right: 4px;
+  font-size: 14px;
+  color: #333;
 }
 
 .odc-search:focus {
