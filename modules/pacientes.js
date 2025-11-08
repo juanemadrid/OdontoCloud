@@ -1,225 +1,252 @@
-// modules/pacientes.js
-// Basado en tu versión funcional — mantiene el botón original y agrega soporte completo de guardado
+// pacientes.js - Versión profesional completa
 
-(function () {
-  if (window.__odc_pacientes_loaded) return;
-  window.__odc_pacientes_loaded = true;
+// 🔹 Alias para simplificar acceso al DOM
+const qid = id => document.getElementById(id);
 
-  function initPacientes(db, auth) {
-    console.log("✅ initPacientes cargado correctamente");
+// 🔹 Referencias principales
+const tablaPacientes = qid("tablaPacientes");
+const btnNuevo = qid("btnNuevoPaciente");
+const btnCerrar = qid("btnCerrarModal");
+const btnCancelar = qid("modalCancel");
+const modal = qid("modalPaciente");
+const form = qid("formPaciente");
+const buscarInput = qid("buscarPaciente");
+const btnBuscar = qid("btnBuscar");
+const btnInactivos = qid("btnInactivos");
+const btnFiltroDoctor = qid("btnFiltroDoctor");
+const doctorDropdown = qid("doctorDropdown");
+const doctorList = qid("doctorList");
+const resultCount = qid("resultCount");
 
-    const IDS = {
-      modal: "modalPaciente",
-      btnNuevo: "btnNuevoPaciente",
-      btnCerrar: "btnCerrarModal",
-      btnCancelar: "modalCancel",
-      form: "formPaciente",
-      tabla: "tablaPacientes",
-      buscarInput: "buscarPaciente",
-      btnBuscar: "btnBuscar",
-      btnInactivos: "btnInactivos",
-      btnFiltroDoctor: "btnFiltroDoctor",
-      doctorList: "doctorList",
-    };
+let pacientes = [];
+let mostrarInactivos = false;
+let filtroDoctor = "__all__";
 
-    let bound = false;
-    let currentFilterDoctor = "";
-    let currentShowInactivos = false;
+// ===================================================
+// 🔹 CARGA INICIAL
+// ===================================================
+window.addEventListener("DOMContentLoaded", async () => {
+  await cargarPacientes();
+  inicializarEventos();
+});
 
-    function openModal() {
-      const modal = document.getElementById(IDS.modal);
-      if (!modal) return console.warn("❌ No se encontró #modalPaciente");
-      modal.style.display = "flex";
-      modal.setAttribute("aria-hidden", "false");
-    }
+// ===================================================
+// 🔹 CARGAR PACIENTES DESDE FIREBASE
+// ===================================================
+async function cargarPacientes() {
+  try {
+    const snapshot = await window.db.collection("pacientes").get();
+    pacientes = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    renderPacientes();
+    cargarDoctoresUnicos();
+  } catch (error) {
+    console.error("Error cargando pacientes:", error);
+  }
+}
 
-    function closeModal() {
-      const modal = document.getElementById(IDS.modal);
-      const form = document.getElementById(IDS.form);
-      if (modal) {
-        modal.style.display = "none";
-        modal.setAttribute("aria-hidden", "true");
-      }
-      if (form) try { form.reset(); } catch (e) {}
-    }
+// ===================================================
+// 🔹 MOSTRAR PACIENTES EN TABLA
+// ===================================================
+function renderPacientes() {
+  tablaPacientes.innerHTML = "";
 
-    function escapeHtml(s) {
-      if (s == null) return "";
-      return String(s)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;");
-    }
+  let filtrados = pacientes.filter(p => {
+    const activo = !p.inactivo;
+    if (!mostrarInactivos && !activo) return false;
+    if (filtroDoctor !== "__all__" && p.doctor !== filtroDoctor) return false;
+    return true;
+  });
 
-    function renderPacientes(rows) {
-      const tbody = document.getElementById(IDS.tabla);
-      const countEl = document.getElementById("resultCount");
-      if (!tbody) return;
-      if (!rows || rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6">Sin datos</td></tr>`;
-        if (countEl) countEl.textContent = "0";
-        return;
-      }
-      let html = "";
-      rows.forEach((r) => {
-        const fecha = r.createdAt || r.fechaIngreso || "";
-        html += `
-          <tr>
-            <td>${escapeHtml(r.nombre)}</td>
-            <td>${escapeHtml(r.documento)}</td>
-            <td>${escapeHtml(fecha)}</td>
-            <td style="text-align:center">
-              <button class="btn-editar" data-id="${escapeHtml(r.id)}">Editar</button>
-              <button class="btn-inactivar" data-id="${escapeHtml(r.id)}">Inactivar</button>
-            </td>
-          </tr>`;
-      });
-      tbody.innerHTML = html;
-      if (countEl) countEl.textContent = String(rows.length);
-    }
-
-    async function buscarPacientes(term = "", filterDoctor = "", showInactivos = false) {
-      term = (term || "").trim().toLowerCase();
-      filterDoctor = (filterDoctor || "").trim();
-      try {
-        if (db) {
-          const { collection, getDocs, query, orderBy } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
-          const cRef = collection(db, "pacientes");
-          const snap = await getDocs(query(cRef, orderBy("nombre")));
-          const rows = [];
-          snap.forEach((d) => {
-            const data = d.data();
-            const id = d.id;
-            const nombre = (data.nombre || "").toString();
-            const documento = (data.documento || "").toString();
-            const telefono = (data.celular || data.telefono || "").toString();
-            const doctor = (data.doctor || "").toString();
-            const activo = data.activo === false ? false : true;
-            if (!showInactivos && !activo) return;
-            if (filterDoctor && filterDoctor !== "__all" && doctor !== filterDoctor) return;
-            const hay = `${nombre} ${documento} ${telefono}`.toLowerCase();
-            if (term && !hay.includes(term)) return;
-            rows.push({ id, nombre, documento, telefono, doctor, createdAt: data.creado || data.fechaIngreso || "" });
-          });
-          renderPacientes(rows);
-        } else {
-          renderPacientes([]);
-        }
-      } catch (err) {
-        console.error("Error buscando pacientes:", err);
-        renderPacientes([]);
-      }
-    }
-
-    function bindOnce() {
-      if (bound) return;
-      const btnNuevo = document.getElementById(IDS.btnNuevo);
-      const btnCerrar = document.getElementById(IDS.btnCerrar);
-      const btnCancelar = document.getElementById(IDS.btnCancelar);
-      const modal = document.getElementById(IDS.modal);
-      const form = document.getElementById(IDS.form);
-      const buscarInput = document.getElementById(IDS.buscarInput);
-      const btnBuscar = document.getElementById(IDS.btnBuscar);
-      const btnInactivos = document.getElementById(IDS.btnInactivos);
-      const btnFiltroDoctor = document.getElementById(IDS.btnFiltroDoctor);
-      const doctorList = document.getElementById(IDS.doctorList);
-
-      if (!btnNuevo || !modal || !form) return false;
-
-      btnNuevo.addEventListener("click", (e) => { e.preventDefault(); openModal(); });
-      btnCerrar?.addEventListener("click", (e) => { e.preventDefault(); closeModal(); });
-      btnCancelar?.addEventListener("click", (e) => { e.preventDefault(); closeModal(); });
-
-      modal.addEventListener("click", (e) => {
-        if (e.target.classList.contains("odc-modal-backdrop")) closeModal();
-      });
-
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const nombre = (document.getElementById("inputNombre")?.value || "").trim();
-        const documento = (document.getElementById("inputDocumento")?.value || "").trim();
-        const telefono = (document.getElementById("inputTelefono")?.value || "").trim();
-        const eps = (document.getElementById("inputEps")?.value || "").trim();
-        const doctor = (document.getElementById("inputDoctor")?.value || "").trim();
-        if (!nombre || !documento) { alert("Completa Nombre y Documento"); return; }
-
-        try {
-          if (db) {
-            const { doc, getDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
-            const idCandidate = documento.replace(/\s+/g, "_");
-            const ref = doc(db, "pacientes", idCandidate);
-            const snap = await getDoc(ref);
-            const payload = { nombre, documento, telefono, eps, doctor, creado: new Date().toISOString(), activo: true };
-            await setDoc(ref, payload, { merge: true });
-          } else {
-            console.log("DB no disponible — simulando guardado", { nombre, documento });
-          }
-          alert("✅ Paciente guardado correctamente.");
-          closeModal();
-          await buscarPacientes();
-        } catch (err) {
-          console.error("Error guardando paciente:", err);
-          alert("Error guardando paciente. Mira la consola.");
-        }
-      });
-
-      if (buscarInput) {
-        buscarInput.addEventListener("input", async (e) => {
-          await buscarPacientes(e.target.value, currentFilterDoctor, currentShowInactivos);
-        });
-      }
-
-      btnBuscar?.addEventListener("click", async (e) => {
-        e.preventDefault();
-        await buscarPacientes(buscarInput?.value || "", currentFilterDoctor, currentShowInactivos);
-      });
-
-      btnInactivos?.addEventListener("click", async (e) => {
-        e.preventDefault();
-        currentShowInactivos = !currentShowInactivos;
-        btnInactivos.classList.toggle("active", currentShowInactivos);
-        await buscarPacientes(buscarInput?.value || "", currentFilterDoctor, currentShowInactivos);
-      });
-
-      btnFiltroDoctor?.addEventListener("click", () => {
-        const dd = document.getElementById("doctorDropdown");
-        if (!dd) return;
-        const hidden = dd.style.display === "none" || dd.getAttribute("aria-hidden") === "true";
-        dd.style.display = hidden ? "block" : "none";
-        dd.setAttribute("aria-hidden", hidden ? "false" : "true");
-      });
-
-      doctorList?.addEventListener("click", async (e) => {
-        const btn = e.target.closest(".odc-dropdown-item");
-        if (!btn) return;
-        const doctor = btn.dataset.doctor || "__all";
-        currentFilterDoctor = doctor === "__all" ? "" : doctor;
-        document.getElementById("doctorDropdown").style.display = "none";
-        await buscarPacientes(buscarInput?.value || "", currentFilterDoctor, currentShowInactivos);
-      });
-
-      bound = true;
-      console.log("🎯 Listeners pacientes conectados correctamente");
-      return true;
-    }
-
-    const tryBind = async () => {
-      const ok = bindOnce();
-      if (ok) {
-        await buscarPacientes("", currentFilterDoctor, currentShowInactivos);
-        return;
-      }
-      setTimeout(tryBind, 300);
-    };
-
-    tryBind();
+  // Búsqueda activa
+  const texto = buscarInput.value.trim().toLowerCase();
+  if (texto) {
+    filtrados = filtrados.filter(p =>
+      (p.nombres || "").toLowerCase().includes(texto) ||
+      (p.apellidos || "").toLowerCase().includes(texto) ||
+      (p.nombreCompleto || "").toLowerCase().includes(texto) ||
+      (p.nroDocumento || "").includes(texto) ||
+      (p.celular || "").includes(texto)
+    );
   }
 
-  window.initPacientes = initPacientes;
+  if (filtrados.length === 0) {
+    tablaPacientes.innerHTML = `<tr class="sin-datos"><td colspan="6">Sin datos</td></tr>`;
+    resultCount.textContent = 0;
+    return;
+  }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    try { initPacientes(window.db, window.auth); }
-    catch (err) { console.error("initPacientes autoinit error:", err); }
+  filtrados.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p.nombreCompleto || `${p.nombres || ""} ${p.apellidos || ""}`}</td>
+      <td>${p.nroDocumento || "-"}</td>
+      <td>${p.fechaIngreso || "-"}</td>
+      <td style="text-align:center">
+        <button class="odc-btn odc-btn-blue btn-ver" data-id="${p.id}">Ver</button>
+        <button class="odc-btn odc-btn-green btn-editar" data-id="${p.id}">Editar</button>
+        <button class="odc-btn odc-btn-red btn-eliminar" data-id="${p.id}">Eliminar</button>
+      </td>
+    `;
+    tablaPacientes.appendChild(tr);
   });
-})();
+
+  resultCount.textContent = filtrados.length;
+  vincularBotonesFila();
+}
+
+// ===================================================
+// 🔹 VINCULAR BOTONES DE CADA FILA
+// ===================================================
+function vincularBotonesFila() {
+  tablaPacientes.querySelectorAll(".btn-editar").forEach(btn => {
+    btn.addEventListener("click", e => editarPaciente(e.target.dataset.id));
+  });
+  tablaPacientes.querySelectorAll(".btn-eliminar").forEach(btn => {
+    btn.addEventListener("click", e => eliminarPaciente(e.target.dataset.id));
+  });
+  tablaPacientes.querySelectorAll(".btn-ver").forEach(btn => {
+    btn.addEventListener("click", e => verHistorialPaciente(e.target.dataset.id));
+  });
+}
+
+// ===================================================
+// 🔹 EVENTOS GENERALES
+// ===================================================
+function inicializarEventos() {
+  btnNuevo.addEventListener("click", abrirModalNuevo);
+  btnCerrar.addEventListener("click", cerrarModal);
+  btnCancelar.addEventListener("click", cerrarModal);
+
+  btnBuscar.addEventListener("click", renderPacientes);
+  buscarInput.addEventListener("keyup", e => {
+    if (e.key === "Enter") renderPacientes();
+  });
+
+  btnInactivos.addEventListener("click", () => {
+    mostrarInactivos = !mostrarInactivos;
+    btnInactivos.classList.toggle("activo", mostrarInactivos);
+    renderPacientes();
+  });
+
+  btnFiltroDoctor.addEventListener("click", () => {
+    doctorDropdown.style.display = "block";
+  });
+
+  document.addEventListener("click", e => {
+    if (!doctorDropdown.contains(e.target) && e.target !== btnFiltroDoctor) {
+      doctorDropdown.style.display = "none";
+    }
+  });
+
+  form.addEventListener("submit", guardarPaciente);
+}
+
+// ===================================================
+// 🔹 LLENAR LISTA DE DOCTORES PARA FILTRO
+// ===================================================
+function cargarDoctoresUnicos() {
+  const doctores = [...new Set(pacientes.map(p => p.doctor).filter(Boolean))];
+  doctorList.innerHTML = `<button class="odc-dropdown-item" data-doctor="__all__">Todos</button>`;
+  doctores.forEach(d => {
+    const btn = document.createElement("button");
+    btn.className = "odc-dropdown-item";
+    btn.dataset.doctor = d;
+    btn.textContent = d;
+    doctorList.appendChild(btn);
+  });
+
+  doctorList.querySelectorAll("button").forEach(btn => {
+    btn.addEventListener("click", e => {
+      filtroDoctor = e.target.dataset.doctor;
+      doctorDropdown.style.display = "none";
+      renderPacientes();
+    });
+  });
+}
+
+// ===================================================
+// 🔹 ABRIR Y CERRAR MODAL
+// ===================================================
+function abrirModalNuevo() {
+  form.reset();
+  qid("pacienteId").value = "";
+  modal.style.display = "block";
+}
+
+function cerrarModal() {
+  modal.style.display = "none";
+}
+
+// ===================================================
+// 🔹 GUARDAR / ACTUALIZAR PACIENTE
+// ===================================================
+async function guardarPaciente(e) {
+  e.preventDefault();
+
+  const id = qid("pacienteId").value;
+  const data = {
+    nombres: qid("nombres").value,
+    apellidos: qid("apellidos").value,
+    nombreCompleto: `${qid("nombres").value} ${qid("apellidos").value}`.trim(),
+    nroDocumento: qid("nroDocumento").value,
+    fechaIngreso: qid("fechaIngreso").value,
+    doctor: qid("doctor").value,
+    celular: qid("celular").value,
+    email: qid("email").value,
+    inactivo: false,
+  };
+
+  try {
+    if (id) {
+      await window.db.collection("pacientes").doc(id).update(data);
+    } else {
+      await window.db.collection("pacientes").add(data);
+    }
+    await cargarPacientes();
+    cerrarModal();
+  } catch (error) {
+    console.error("Error guardando paciente:", error);
+  }
+}
+
+// ===================================================
+// 🔹 EDITAR PACIENTE
+// ===================================================
+function editarPaciente(id) {
+  const p = pacientes.find(p => p.id === id);
+  if (!p) return;
+
+  for (const [key, val] of Object.entries(p)) {
+    if (qid(key)) qid(key).value = val;
+  }
+
+  qid("pacienteId").value = id;
+  modal.style.display = "block";
+}
+
+// ===================================================
+// 🔹 ELIMINAR PACIENTE
+// ===================================================
+async function eliminarPaciente(id) {
+  if (!confirm("¿Deseas eliminar este paciente?")) return;
+  try {
+    await window.db.collection("pacientes").doc(id).delete();
+    await cargarPacientes();
+  } catch (error) {
+    console.error("Error eliminando paciente:", error);
+  }
+}
+
+// ===================================================
+// 🔹 VER HISTORIAL DE PACIENTE
+// ===================================================
+async function verHistorialPaciente(id) {
+  const p = pacientes.find(p => p.id === id);
+  if (!p) return alert("Paciente no encontrado.");
+
+  // Aquí podrías abrir un modal de historial o cargar una vista aparte
+  alert(`Historial de ${p.nombreCompleto}\nDocumento: ${p.nroDocumento}\nDoctor: ${p.doctor || "No asignado"}`);
+}
