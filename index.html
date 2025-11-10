@@ -16,10 +16,20 @@
 
     <div class="right-panel">
       <h3>Acceso a la plataforma</h3>
-      <form id="loginForm">
-        <input type="email" id="email" placeholder="usuario@ejemplo.com" required>
-        <input type="password" id="password" placeholder="Contraseña" required>
-        <a href="#" class="forgot">¿Olvidó su contraseña?</a>
+      <form id="loginForm" autocomplete="off"> <!-- Evita que el navegador guarde credenciales -->
+        <input 
+          type="email" 
+          id="email" 
+          placeholder="usuario@ejemplo.com" 
+          required 
+          autocomplete="off">
+        <input 
+          type="password" 
+          id="password" 
+          placeholder="Contraseña" 
+          required 
+          autocomplete="off">
+        <a href="#" class="forgot" id="forgotLink">¿Olvidó su contraseña?</a>
         <button type="submit">Iniciar sesión</button>
       </form>
       <p id="errorMsg" style="color: red; text-align: center; margin-top: 10px;"></p>
@@ -28,5 +38,13 @@
 
   <!-- Script Firebase -->
   <script type="module" src="app.js"></script>
+
+  <!-- Evita que el link de "¿Olvidó su contraseña?" recargue la página -->
+  <script>
+    document.getElementById("forgotLink").addEventListener("click", function(e) {
+      e.preventDefault();
+      alert("Funcionalidad de recuperación de contraseña en desarrollo.");
+    });
+  </script>
 </body>
 </html>
